@@ -1,0 +1,138 @@
+/* ============================================
+   CSS 自定义属性 - 完整设计系统
+   ============================================ */
+
+:root {
+  /* 颜色系统 */
+  --color-primary-modrinth: #1bd96a;
+  --color-primary-spigot: #f6a821;
+  --color-primary-hangar: #1e88e5;
+  
+  /* 浅色主题 */
+  --color-bg-light: #fafbfc;
+  --color-bg-surface-light: #ffffff;
+  --color-bg-elevated-light: #f5f7fa;
+  --color-text-primary-light: #1a202c;
+  --color-text-secondary-light: #64748b;
+  --color-text-tertiary-light: #94a3b8;
+  --color-border-light: #e2e8f0;
+  --color-border-elevated-light: #cbd5e1;
+  --color-shadow-light: rgba(0, 0, 0, 0.05);
+  
+  /* 深色主题 */
+  --color-bg-dark: #0b0f14;
+  --color-bg-surface-dark: #131820;
+  --color-bg-elevated-dark: #1a2030;
+  --color-text-primary-dark: #e2e8f0;
+  --color-text-secondary-dark: #94a3b8;
+  --color-text-tertiary-dark: #64748b;
+  --color-border-dark: #1e293b;
+  --color-border-elevated-dark: #334155;
+  --color-shadow-dark: rgba(0, 0, 0, 0.3);
+  
+  /* 状态颜色 */
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-error: #ef4444;
+  --color-info: #3b82f6;
+  
+  /* 排版 */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+  
+  /* 字体大小 */
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: 1.875rem;
+  --text-4xl: 2.25rem;
+  
+  /* 字体权重 */
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  
+  /* 行高 */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+  
+  /* 间距（8px 网格） */
+  --space-0: 0;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+  --space-24: 6rem;
+  --space-32: 8rem;
+  
+  /* 圆角 */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 24px;
+  --radius-full: 9999px;
+  
+  /* 阴影 */
+  --shadow-sm: 0 1px 2px 0 var(--color-shadow-light);
+  --shadow-md: 0 4px 6px -1px var(--color-shadow-light);
+  --shadow-lg: 0 10px 15px -3px var(--color-shadow-light);
+  --shadow-xl: 0 20px 25px -5px var(--color-shadow-light);
+  
+  /* 过渡 */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 300ms ease-in-out;
+  --transition-slow: 500ms ease-in-out;
+  
+  /* 容器 */
+  --container-sm: 640px;
+  --container-md: 768px;
+  --container-lg: 1024px;
+  --container-xl: 1280px;
+  --container-2xl: 1536px;
+  
+  /* Z索引 */
+  --z-dropdown: 1000;
+  --z-modal-backdrop: 1100;
+  --z-modal: 1200;
+  --z-toast: 1300;
+  --z-header: 500;
+}
+
+/* 浅色主题 */
+[data-theme="light"] {
+  --color-bg: var(--color-bg-light);
+  --color-bg-surface: var(--color-bg-surface-light);
+  --color-bg-elevated: var(--color-bg-elevated-light);
+  --color-text-primary: var(--color-text-primary-light);
+  --color-text-secondary: var(--color-text-secondary-light);
+  --color-text-tertiary: var(--color-text-tertiary-light);
+  --color-border: var(--color-border-light);
+  --color-border-elevated: var(--color-border-elevated-light);
+  --color-shadow: var(--color-shadow-light);
+}
+
+/* 深色主题 */
+[data-theme="dark"] {
+  --color-bg: var(--color-bg-dark);
+  --color-bg-surface: var(--color-bg-surface-dark);
+  --color-bg-elevated: var(--color-bg-elevated-dark);
+  --color-text-primary: var(--color-text-primary-dark);
+  --color-text-secondary: var(--color-text-secondary-dark);
+  --color-text-tertiary: var(--color-text-tertiary-dark);
+  --color-border: var(--color-border-dark);
+  --color-border-elevated: var(--color-border-elevated-dark);
+  --color-shadow: var(--color-shadow-dark);
+}

@@ -2,7 +2,8 @@
     /* 品牌色 */
     --modrinth-green: #1bd96a;
     --spigot-orange: #f6a821;
-    --primary-accent: var(--modrinth-green); /* 默认强调色 */
+    --hangar-blue: #0073e6;
+    --primary-accent: var(--modrinth-green);
 
     /* 字体 */
     --font-main: 'Inter', sans-serif;

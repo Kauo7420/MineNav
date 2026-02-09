@@ -11,30 +11,47 @@ function renderCard(item, platform) {
         downloads = item.downloads;
         date = new Date(item.date_modified).toLocaleDateString('zh-CN');
         link = `https://modrinth.com/plugin/${item.slug}`;
-    } else {
+    } 
+    else if (platform === 'hangar') {
+        // Hangar 数据映射
+        id = item.namespace?.slug || item.name;
+        title = item.name;
+        author = item.namespace?.owner || 'Hangar User';
+        desc = item.description || '暂无描述';
+        iconUrl = item.avatarUrl;
+        downloads = item.stats?.downloads || 0;
+        date = new Date(item.lastUpdated).toLocaleDateString('zh-CN');
+        link = `https://hangar.papermc.io/${item.namespace?.owner}/${item.namespace?.slug}`;
+    }
+    else { // spigot
         id = item.id;
         title = item.name;
-        author = 'SpigotUser'; // Spigot 列表接口不直接返回作者名
+        author = 'SpigotUser';
         desc = item.tag;
-        // Spigot 图标构造
         iconUrl = item.icon.url ? `https://www.spigotmc.org/${item.icon.url}` : `https://www.spigotmc.org/data/resource_icons/${Math.floor(id/1000)}/${id}.jpg`;
         downloads = item.downloads;
         date = new Date(item.updateDate * 1000).toLocaleDateString('zh-CN');
         link = `https://www.spigotmc.org/resources/${id}`;
     }
 
-    // 默认图标处理
+    // 图标处理
     const imgHtml = iconUrl 
-        ? `<img src="${iconUrl}" class="card-icon" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\'fa-solid fa-puzzle-piece\'></i>'">` 
+        ? `<img src="${iconUrl}" class="card-icon" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-puzzle-piece\\'></i>'">` 
         : `<div class="card-icon"><i class="fa-solid fa-puzzle-piece"></i></div>`;
 
-    const platformBadge = platform === 'modrinth' 
-        ? `<span class="badge badge-modrinth"><i class="fa-solid fa-cube"></i> Modrinth</span>`
-        : `<span class="badge badge-spigot"><i class="fa-solid fa-faucet"></i> Spigot</span>`;
+    // 平台徽章
+    let platformBadge;
+    if (platform === 'modrinth') {
+        platformBadge = `<span class="badge badge-modrinth"><i class="fa-solid fa-cube"></i> Modrinth</span>`;
+    } else if (platform === 'hangar') {
+        platformBadge = `<span class="badge badge-hangar"><i class="fa-solid fa-paper-plane"></i> Hangar</span>`;
+    } else {
+        platformBadge = `<span class="badge badge-spigot"><i class="fa-solid fa-faucet"></i> Spigot</span>`;
+    }
 
     const card = document.createElement('div');
     card.className = 'card';
-    card.onclick = () => openModal(item, platform); // 调用 modal.js
+    card.onclick = () => openModal(item, platform);
 
     card.innerHTML = `
         <div class="card-header">

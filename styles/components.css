@@ -98,3 +98,8 @@
     color: var(--text-secondary);
     font-family: var(--font-mono);
 }
+
+.badge-hangar { 
+    background: rgba(0, 115, 230, 0.15); 
+    color: #0073e6; 
+}

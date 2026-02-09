@@ -34,6 +34,9 @@
                 <button class="platform-btn" data-platform="modrinth">
                     <i class="fa-solid fa-cube"></i> Modrinth
                 </button>
+                <button class="platform-btn" data-platform="hangar">
+                    <i class="fa-solid fa-paper-plane"></i> Hangar
+                </button>
                 <button class="platform-btn" data-platform="spigot">
                     <i class="fa-solid fa-faucet"></i> SpigotMC
                 </button>
@@ -53,8 +56,11 @@
 
     <header class="hero">
         <div class="hero-content">
-            <h1>发现最好的 <span class="highlight">Minecraft</span> 服务器插件</h1>
-            <p>聚合 Modrinth 与 SpigotMC 的海量资源</p>
+            <h1>
+                <span id="hero-typing-text">发现最好的</span> 
+                <span class="highlight">Minecraft</span> 服务器插件
+            </h1>
+            <p>聚合 Modrinth、SpigotMC 与 Hangar 的海量资源</p>
             <div class="stats-container">
                 <div class="stat-item">
                     <span id="stat-plugins" class="stat-number">0</span>
@@ -115,6 +121,7 @@
             <div class="footer-links">
                 <a href="https://modrinth.com" target="_blank">Modrinth</a>
                 <a href="https://spigotmc.org" target="_blank">SpigotMC</a>
+                <a herf="https://hangar.papermc.io" target="_blank">Hangar</a>
             </div>
             <p class="copyright">© 2026 PluginMarket. 插件内容归原作者所有。</p>
         </div>
@@ -126,5 +133,6 @@
     <script src="scripts/cards.js"></script>
     <script src="scripts/modal.js"></script>
     <script src="scripts/app.js"></script>
+    <script src="scripts/typing-animation.js"></script>
 </body>
 </html>

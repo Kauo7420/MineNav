@@ -21,3 +21,21 @@
 .card {
     animation: fadeIn 0.4s ease forwards;
 }
+
+/* 打字机光标动画 */
+.typing-cursor {
+    display: inline-block;
+    margin-left: 2px;
+    animation: blink 0.7s infinite;
+    font-weight: 400;
+}
+
+@keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+}
+
+.typing-text {
+    display: inline-block;
+    min-width: 10px; /* 防止布局抖动 */
+}

@@ -19,7 +19,6 @@ async function openModal(item, platform) {
 
     let details = {};
     
-    // 获取更详细信息
     if (platform === 'modrinth') {
         const fullData = await ApiService.getModrinthDetail(item.project_id);
         details = {
@@ -30,16 +29,50 @@ async function openModal(item, platform) {
             categories: fullData.categories,
             versions: fullData.game_versions
         };
-    } else {
-        // Spigot 详情 API 受限，使用列表数据兜底
+    } 
+    else if (platform === 'hangar') {
+        // Hangar 详情
+        const slug = `${item.namespace.owner}/${item.namespace.slug}`;
+        const fullData = await ApiService.getHangarDetail(slug);
+        
+        if (fullData) {
+            details = {
+                title: fullData.name,
+                desc: fullData.description || '该项目暂无详细描述',
+                downloads: fullData.stats?.downloads || item.stats?.downloads || 0,
+                stars: fullData.stats?.stars || item.stats?.stars || 0,
+                link: `https://hangar.papermc.io/${slug}`,
+                categories: [CONFIG.HANGAR_CATEGORIES[fullData.category] || fullData.category],
+                versions: [] // 可选:调用 getHangarVersions 获取
+            };
+        } else {
+            // 降级使用列表数据
+            details = {
+                title: item.name,
+                desc: item.description || '暂无详细描述',
+                downloads: item.stats?.downloads || 0,
+                stars: item.stats?.stars || 0,
+                link: `https://hangar.papermc.io/${slug}`,
+                categories: [CONFIG.HANGAR_CATEGORIES[item.category] || item.category],
+                versions: []
+            };
+        }
+    }
+    else { // spigot
         details = {
             title: item.name,
             desc: item.tag + "<br><br>更多详情请点击下方链接前往 SpigotMC 查看。",
             downloads: item.downloads,
             link: `https://www.spigotmc.org/resources/${item.id}`,
-            categories: [item.category.name || 'Plugin'],
-            versions: [item.version.id]
+            categories: [item.category?.name || 'Plugin'],
+            versions: [item.version?.id]
         };
+    }
+
+    // 生成模态框内容
+    let statsHtml = `<i class="fa-solid fa-download"></i> ${formatNumber(details.downloads)} 下载`;
+    if (details.stars !== undefined) {
+        statsHtml += ` &nbsp;|&nbsp; <i class="fa-solid fa-star"></i> ${formatNumber(details.stars)} 星标`;
     }
 
     modalContent.innerHTML = `
@@ -48,7 +81,7 @@ async function openModal(item, platform) {
             ${(details.categories || []).map(c => `<span class="badge" style="background:var(--bg-input)">${c}</span>`).join('')}
         </div>
         <p style="color:var(--text-secondary); margin-bottom: 20px;">
-            <i class="fa-solid fa-download"></i> ${formatNumber(details.downloads)} 下载
+            ${statsHtml}
         </p>
         <div style="background:var(--bg-input); padding:15px; border-radius:8px; margin-bottom:20px; max-height:300px; overflow-y:auto; line-height:1.6;">
             ${details.desc}

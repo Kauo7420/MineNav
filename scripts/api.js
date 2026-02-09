@@ -68,6 +68,71 @@ class ApiService {
         }
     }
 
+    // 获取 Hangar 插件
+    static async fetchHangar(query, category, sort, offset) {
+        let url = `${CONFIG.HANGAR_API}/projects?limit=12&offset=${offset}`;
+        
+        // 搜索关键词
+        if (query) {
+            url += `&q=${encodeURIComponent(query)}`;
+        }
+        
+        // 分类筛选
+        if (category && category !== 'all') {
+            const catMap = CONFIG.CATEGORIES.find(c => c.id === category);
+            if (catMap && catMap.hangar) {
+                url += `&category=${catMap.hangar}`;
+            }
+        }
+
+        // 排序映射
+        const sortMap = {
+            'downloads': '-downloads',
+            'newest': '-newest',
+            'updated': '-updated'
+        };
+        url += `&sort=${sortMap[sort] || '-downloads'}`;
+
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error('Hangar API Error');
+            
+            const data = await res.json();
+            
+            return {
+                platform: 'hangar',
+                hits: data.result || [],
+                total: data.pagination?.count || 0
+            };
+        } catch (e) {
+            console.error('Hangar fetch error:', e);
+            return { platform: 'hangar', hits: [], total: 0, error: true };
+        }
+    }
+
+    // 获取 Hangar 项目详情
+    static async getHangarDetail(slug) {
+        try {
+            const res = await fetch(`${CONFIG.HANGAR_API}/projects/${slug}`);
+            if (!res.ok) throw new Error('Hangar Detail API Error');
+            return await res.json();
+        } catch (e) {
+            console.error('Hangar detail error:', e);
+            return null;
+        }
+    }
+
+    // 获取 Hangar 项目版本
+    static async getHangarVersions(slug) {
+        try {
+            const res = await fetch(`${CONFIG.HANGAR_API}/projects/${slug}/versions`);
+            if (!res.ok) throw new Error('Hangar Versions API Error');
+            return await res.json();
+        } catch (e) {
+            console.error('Hangar versions error:', e);
+            return null;
+        }
+    }
     // 获取详情 (Modrinth)
     static async getModrinthDetail(id) {
         const res = await fetch(`${CONFIG.MODRINTH_API}/project/${id}`);

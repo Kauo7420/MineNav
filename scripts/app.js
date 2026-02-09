@@ -58,9 +58,19 @@ function bindEvents() {
             
             // 改变强调色
             const root = document.documentElement;
-            if (state.platform === 'modrinth') root.style.setProperty('--primary-accent', 'var(--modrinth-green)');
-            else if (state.platform === 'spigot') root.style.setProperty('--primary-accent', 'var(--spigot-orange)');
-            else root.style.setProperty('--primary-accent', 'var(--modrinth-green)'); // Default
+            switch(state.platform) {
+                case 'modrinth':
+                    root.style.setProperty('--primary-accent', 'var(--modrinth-green)');
+                    break;
+                case 'spigot':
+                    root.style.setProperty('--primary-accent', 'var(--spigot-orange)');
+                    break;
+                case 'hangar':
+                    root.style.setProperty('--primary-accent', 'var(--hangar-blue)');
+                    break;
+                default:
+                    root.style.setProperty('--primary-accent', 'var(--modrinth-green)');
+            }
 
             updateStats();
             fetchData(true);
@@ -113,18 +123,21 @@ async function fetchData(reset) {
     document.getElementById('result-count').innerText = '正在搜索...';
 
     const results = [];
-    
-    // 并行或单一获取
     const promises = [];
     
+    // Modrinth
     if (state.platform === 'all' || state.platform === 'modrinth') {
-        // Modrinth offset based
         promises.push(ApiService.fetchModrinth(state.search, state.category, state.sort, state.page * 12));
     }
     
+    // Spigot
     if (state.platform === 'all' || state.platform === 'spigot') {
-        // Spigot page based (1-indexed usually, but Spiget might be 1)
         promises.push(ApiService.fetchSpigot(state.search, state.category, state.sort, state.page + 1));
+    }
+
+    // Hangar (新增)
+    if (state.platform === 'all' || state.platform === 'hangar') {
+        promises.push(ApiService.fetchHangar(state.search, state.category, state.sort, state.page * 12));
     }
 
     const responses = await Promise.all(promises);
@@ -135,11 +148,18 @@ async function fetchData(reset) {
         }
     });
 
-    // 混合排序 (如果是 ALL 模式)
+    // 混合排序
     if (state.platform === 'all') {
         results.sort((a, b) => {
-            const valA = a.data.downloads || 0;
-            const valB = b.data.downloads || 0;
+            let valA = 0, valB = 0;
+            
+            // 统一不同平台的下载量字段
+            if (a.platform === 'hangar') valA = a.data.stats?.downloads || 0;
+            else valA = a.data.downloads || 0;
+            
+            if (b.platform === 'hangar') valB = b.data.stats?.downloads || 0;
+            else valB = b.data.downloads || 0;
+            
             return state.sort === 'downloads' ? valB - valA : 0;
         });
     }
@@ -158,6 +178,32 @@ async function fetchData(reset) {
     }
 
     state.loading = false;
+}
+
+// 更新统计数据函数
+function updateStats() {
+    let targetPlugins, targetDownloads;
+    
+    switch(state.platform) {
+        case 'modrinth':
+            targetPlugins = 45000;
+            targetDownloads = 400000000;
+            break;
+        case 'spigot':
+            targetPlugins = 100000;
+            targetDownloads = 500000000;
+            break;
+        case 'hangar':
+            targetPlugins = 8000;
+            targetDownloads = 150000000;
+            break;
+        default:
+            targetPlugins = 153000;
+            targetDownloads = 1050000000;
+    }
+    
+    animateValue(statPlugins, 0, targetPlugins, 1000);
+    animateValue(statDownloads, 0, targetDownloads, 1500);
 }
 
 // 模拟统计数据动画

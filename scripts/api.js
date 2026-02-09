@@ -138,4 +138,27 @@ class ApiService {
         const res = await fetch(`${CONFIG.MODRINTH_API}/project/${id}`);
         return await res.json();
     }
+
+    static async getModrinthVersion(versionId) {
+        if (!versionId) return null;
+        try {
+            const res = await fetch(`${CONFIG.MODRINTH_API}/version/${versionId}`);
+            if (!res.ok) throw new Error('Modrinth version API Error');
+            return await res.json();
+        } catch (e) {
+            console.warn('Modrinth version fetch error:', e);
+            return null;
+        }
+    }
+
+    static async getSpigotDetail(id) {
+        try {
+            const res = await fetch(`${CONFIG.SPIGET_API}/resources/${id}`);
+            if (!res.ok) throw new Error('Spigot detail API Error');
+            return await res.json();
+        } catch (e) {
+            console.warn('Spigot detail fetch error:', e);
+            return null;
+        }
+    }
 }

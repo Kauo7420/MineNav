@@ -22,10 +22,10 @@ async function openModal(item, platform) {
     
     if (platform === 'modrinth') {
         try {
-            const fullData = await ApiService.getModrinthDetail(item.project_id);
+            const fullData = await ApiService.getModrinthDetail(item.project_id || item.id || item.slug);
             details = {
                 title: fullData.title,
-                desc: fullData.body, // Markdown/HTML
+                desc: renderMarkdownContent(fullData.body),
                 downloads: fullData.downloads,
                 link: `https://modrinth.com/plugin/${fullData.slug}`,
                 categories: fullData.categories,
@@ -34,7 +34,7 @@ async function openModal(item, platform) {
         } catch (error) {
             details = {
                 title: item.title,
-                desc: item.description || '暂无详细描述',
+                desc: renderMarkdownContent(item.description || '暂无详细描述'),
                 downloads: item.downloads || 0,
                 link: `https://modrinth.com/plugin/${item.slug}`,
                 categories: item.categories || [],
@@ -44,28 +44,40 @@ async function openModal(item, platform) {
     } 
     else if (platform === 'hangar') {
         // Hangar 详情
-        const slug = `${item.namespace.owner}/${item.namespace.slug}`;
-        const fullData = await ApiService.getHangarDetail(slug);
-        
-        if (fullData) {
-            details = {
-                title: fullData.name,
-                desc: fullData.description || '该项目暂无详细描述',
-                downloads: fullData.stats?.downloads || item.stats?.downloads || 0,
-                stars: fullData.stats?.stars || item.stats?.stars || 0,
-                link: `https://hangar.papermc.io/${slug}`,
-                categories: [CONFIG.HANGAR_CATEGORIES[fullData.category] || fullData.category],
-                versions: [] // 可选:调用 getHangarVersions 获取
-            };
+        const slug = getHangarProjectSlug(item);
+        if (slug) {
+            const fullData = await ApiService.getHangarDetail(slug);
+            
+            if (fullData) {
+                details = {
+                    title: fullData.name,
+                    desc: fullData.description || '该项目暂无详细描述',
+                    downloads: fullData.stats?.downloads || item.stats?.downloads || 0,
+                    stars: fullData.stats?.stars || item.stats?.stars || 0,
+                    link: `https://hangar.papermc.io/${slug}`,
+                    categories: [CONFIG.HANGAR_CATEGORIES[fullData.category] || fullData.category].filter(Boolean),
+                    versions: []
+                };
+            } else {
+                // 降级使用列表数据
+                details = {
+                    title: item.name || '未知项目',
+                    desc: item.description || '暂无详细描述',
+                    downloads: item.stats?.downloads || 0,
+                    stars: item.stats?.stars || 0,
+                    link: `https://hangar.papermc.io/${slug}`,
+                    categories: [CONFIG.HANGAR_CATEGORIES[item.category] || item.category].filter(Boolean),
+                    versions: []
+                };
+            }
         } else {
-            // 降级使用列表数据
             details = {
-                title: item.name,
+                title: item.name || '未知项目',
                 desc: item.description || '暂无详细描述',
                 downloads: item.stats?.downloads || 0,
                 stars: item.stats?.stars || 0,
-                link: `https://hangar.papermc.io/${slug}`,
-                categories: [CONFIG.HANGAR_CATEGORIES[item.category] || item.category],
+                link: '#',
+                categories: [CONFIG.HANGAR_CATEGORIES[item.category] || item.category].filter(Boolean),
                 versions: []
             };
         }

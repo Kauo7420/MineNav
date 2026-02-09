@@ -151,12 +151,21 @@
 /* 搜索框 */
 .search-wrapper {
     position: relative;
-    width: 240px;
+    width: 320px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.search-wrapper input,
+.search-btn {
+    height: 36px;
 }
 
 .search-wrapper input {
-    width: 100%;
-    padding: 8px 12px 8px 36px;
+    flex: 1;
+    min-width: 0;
+    padding: 8px 70px 8px 36px;
     border-radius: 8px;
     border: 1px solid var(--border-color);
     background: var(--bg-input);
@@ -170,6 +179,37 @@
     transform: translateY(-50%);
     color: var(--text-secondary);
     font-size: 0.9rem;
+}
+
+.search-clear {
+    position: absolute;
+    right: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+
+.search-clear.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.search-btn {
+    border: none;
+    background: var(--primary-accent);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
 }
 
 /* Hero */

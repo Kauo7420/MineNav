@@ -82,11 +82,11 @@ const CONFIG = {
 
     TAG_TRANSLATIONS: {
         zh: {
-            'management': '管理工具',
+            'management': '管理',
             'game-mechanics': '游戏机制',
             'worldgen': '世界',
             'economy': '经济',
-            'social': '聊天社交',
+            'social': '社交',
             'utility': '实用工具',
             'protection': '保护系统',
             'library': '库',
@@ -99,9 +99,21 @@ const CONFIG = {
             'games': '游戏',
             'protection': '保护',
             'role_playing': '角色扮演',
-            'world_management': '世界管理',
+            'world_management': '世界生成',
             'misc': '其他',
-            'undefined': '未分类'
+            'undefined': '未分类',
+            'storage': '存储',
+            'cursed': '怪诞',
+            'transportation': '交通',
+            'technology': '科技',
+            'adventure': '冒险',
+            'magic': '魔法',
+            'mobs': '生物',
+            'food': '食物',
+            'minigame': '小游戏',
+            'optimization': '优化',
+            'equipment': '装备',
+            'decoration': '装饰'
         }
     }
 };

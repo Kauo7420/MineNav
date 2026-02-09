@@ -47,8 +47,13 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="search-input" placeholder="搜索插件... (按 / 键)">
                 </div>
-                <button id="theme-toggle" aria-label="切换主题">
-                    <i class="fa-solid fa-sun"></i>
+                <button id="theme-toggle" class="theme-toggle" aria-label="切换主题" aria-pressed="false">
+                    <span class="theme-icon sun" aria-hidden="true">
+                        <i class="fa-solid fa-sun"></i>
+                    </span>
+                    <span class="theme-icon moon" aria-hidden="true">
+                        <i class="fa-solid fa-moon"></i>
+                    </span>
                 </button>
             </div>
         </div>

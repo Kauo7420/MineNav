@@ -21,10 +21,13 @@ themeToggle.addEventListener('click', () => {
     
     html.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
+    themeToggle.classList.remove('is-toggling');
+    void themeToggle.offsetWidth;
+    themeToggle.classList.add('is-toggling');
     updateIcon();
 });
 
 function updateIcon() {
     const isDark = html.getAttribute('data-theme') === 'dark';
-    themeToggle.innerHTML = isDark ? '<i class="fa-solid fa-sun"></i>' : '<i class="fa-solid fa-moon"></i>';
+    themeToggle.setAttribute('aria-pressed', String(!isDark));
 }

@@ -32,7 +32,7 @@ const CONFIG = {
         },
         { 
             id: 'world', 
-            name: '世界', 
+            name: '世界生成', 
             icon: 'fa-globe', 
             modrinth: 'worldgen', 
             spigot: 24,
@@ -40,7 +40,7 @@ const CONFIG = {
         },
         { 
             id: 'economy', 
-            name: '经济', 
+            name: '经济系统', 
             icon: 'fa-coins', 
             modrinth: 'economy', 
             spigot: 21,
@@ -72,7 +72,7 @@ const CONFIG = {
         },
         { 
             id: 'minigames', 
-            name: '库', 
+            name: '库/API', 
             icon: 'fa-code', 
             modrinth: 'library', 
             spigot: 26,

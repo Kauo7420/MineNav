@@ -1,6 +1,6 @@
 // 卡片渲染逻辑
 function renderCard(item, platform) {
-    let title, author, desc, iconUrl, downloads, date, id, link;
+    let title, author, desc, iconUrl, downloads, date, id, link, categories;
 
     if (platform === 'modrinth') {
         id = item.project_id || item.slug;
@@ -11,6 +11,7 @@ function renderCard(item, platform) {
         downloads = item.downloads;
         date = new Date(item.date_modified).toLocaleDateString('zh-CN');
         link = `https://modrinth.com/plugin/${item.slug}`;
+        categories = item.categories || [];
     } 
     else if (platform === 'hangar') {
         // Hangar 数据映射
@@ -22,6 +23,7 @@ function renderCard(item, platform) {
         downloads = item.stats?.downloads || 0;
         date = new Date(item.lastUpdated).toLocaleDateString('zh-CN');
         link = `https://hangar.papermc.io/${item.namespace?.owner}/${item.namespace?.slug}`;
+        categories = [item.category].filter(Boolean);
     }
     else { // spigot
         id = item.id;
@@ -32,12 +34,14 @@ function renderCard(item, platform) {
         downloads = item.downloads;
         date = new Date(item.updateDate * 1000).toLocaleDateString('zh-CN');
         link = `https://www.spigotmc.org/resources/${id}`;
+        categories = [item.category?.name || 'Plugin'];
     }
 
     // 图标处理
+    const fallbackIcon = `<div class="card-icon"><i class="fa-solid fa-puzzle-piece"></i></div>`;
     const imgHtml = iconUrl 
-        ? `<img src="${iconUrl}" class="card-icon" onerror="this.onerror=null;this.parentElement.innerHTML='<i class=\\'fa-solid fa-puzzle-piece\\'></i>'">` 
-        : `<div class="card-icon"><i class="fa-solid fa-puzzle-piece"></i></div>`;
+        ? `<img src="${iconUrl}" class="card-icon" onerror="this.onerror=null;this.parentElement.outerHTML='${fallbackIcon}'">` 
+        : fallbackIcon;
 
     // 平台徽章
     let platformBadge;
@@ -52,8 +56,12 @@ function renderCard(item, platform) {
     const card = document.createElement('div');
     card.className = 'card';
     card.onclick = () => openModal(item, platform);
+    card.dataset.pluginId = `${platform}:${id}`;
 
     card.innerHTML = `
+        <button class="favorite-btn" aria-label="收藏插件" title="收藏">
+            <i class="fa-${FavoritesService.isFavorite(`${platform}:${id}`) ? 'solid' : 'regular'} fa-heart"></i>
+        </button>
         <div class="card-header">
             ${imgHtml}
             <div class="card-title">
@@ -62,6 +70,13 @@ function renderCard(item, platform) {
             </div>
         </div>
         <div class="card-desc">${desc || '暂无描述'}</div>
+        <div class="card-tags">
+            ${TagService.translateList(categories).map(tag => `<span class="tag">${tag}</span>`).join('')}
+        </div>
+        <div class="card-extra">
+            <span title="支持版本"><i class="fa-solid fa-gamepad"></i> <span class="metadata-versions">加载中...</span></span>
+            <span title="最新版本"><i class="fa-solid fa-code-branch"></i> <span class="metadata-latest">加载中...</span></span>
+        </div>
         <div class="card-meta">
             ${platformBadge}
             <div>
@@ -70,6 +85,15 @@ function renderCard(item, platform) {
             </div>
         </div>
     `;
+
+    const favoriteBtn = card.querySelector('.favorite-btn');
+    favoriteBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        const isFavorite = FavoritesService.toggle(item, platform);
+        favoriteBtn.innerHTML = `<i class="fa-${isFavorite ? 'solid' : 'regular'} fa-heart"></i>`;
+    });
+
+    updateCardMetadata(card, item, platform);
     return card;
 }
 
@@ -77,4 +101,19 @@ function formatNumber(num) {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
     return num;
+}
+
+async function updateCardMetadata(card, item, platform) {
+    const versionsEl = card.querySelector('.metadata-versions');
+    const latestEl = card.querySelector('.metadata-latest');
+
+    try {
+        const metadata = await MetadataService.getMetadata(item, platform);
+        versionsEl.textContent = formatVersionRange(metadata.supportedVersions, '未知');
+        latestEl.textContent = metadata.latestVersion || '未知';
+    } catch (error) {
+        console.warn('Card metadata update failed:', error);
+        versionsEl.textContent = '未知';
+        latestEl.textContent = '未知';
+    }
 }

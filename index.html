@@ -47,6 +47,17 @@
                     <i class="fa-solid fa-magnifying-glass"></i>
                     <input type="text" id="search-input" placeholder="搜索插件... (按 / 键)">
                 </div>
+                <button id="favorites-toggle" class="icon-button" title="查看收藏" aria-label="查看收藏">
+                    <i class="fa-solid fa-heart"></i>
+                </button>
+                <div class="nav-social">
+                    <a href="https://github.com" target="_blank" class="icon-button" aria-label="GitHub">
+                        <i class="fa-brands fa-github"></i>
+                    </a>
+                    <a href="https://im.qq.com" target="_blank" class="icon-button" aria-label="QQ">
+                        <i class="fa-brands fa-qq"></i>
+                    </a>
+                </div>
                 <button id="theme-toggle" class="theme-toggle" aria-label="切换主题" aria-pressed="false">
                     <span class="theme-icon sun" aria-hidden="true">
                         <i class="fa-solid fa-sun"></i>
@@ -91,6 +102,8 @@
                 <option value="downloads">按下载量排序</option>
                 <option value="newest">最新发布</option>
                 <option value="updated">最近更新</option>
+                <option value="name-asc">名称 A–Z</option>
+                <option value="name-desc">名称 Z–A</option>
             </select>
         </div>
         <div class="view-toggle">
@@ -98,23 +111,52 @@
         </div>
     </div>
 
-    <main class="container">
-        <div id="plugin-grid" class="plugin-grid">
+    <section id="main-view">
+        <main class="container">
+            <div id="plugin-grid" class="plugin-grid">
+                </div>
+            
+            <div class="pagination">
+                <button id="load-more-btn" class="btn btn-primary">
+                    加载更多 <i class="fa-solid fa-chevron-down"></i>
+                </button>
+                <div id="loading-spinner" class="spinner hidden"></div>
             </div>
-        
-        <div class="pagination">
-            <button id="load-more-btn" class="btn btn-primary">
-                加载更多 <i class="fa-solid fa-chevron-down"></i>
-            </button>
-            <div id="loading-spinner" class="spinner hidden"></div>
+        </main>
+    </section>
+
+    <section id="favorites-view" class="favorites-view hidden">
+        <div class="container">
+            <div class="favorites-header">
+                <div>
+                    <h2>收藏夹</h2>
+                    <p>你收藏的插件会同步显示在这里。</p>
+                </div>
+                <button id="favorites-back" class="btn btn-primary favorites-back">
+                    返回首页
+                </button>
+            </div>
+            <div id="favorites-grid" class="plugin-grid"></div>
         </div>
-    </main>
+    </section>
 
     <div id="modal-overlay" class="modal-overlay hidden">
         <div class="modal">
             <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
             <div id="modal-content" class="modal-content">
                 </div>
+        </div>
+    </div>
+
+    <div id="page-loader" class="page-loader hidden" aria-live="polite" aria-busy="true">
+        <div class="loader-content">
+            <div class="loader-spinner"></div>
+            <div class="loader-text">正在加载插件数据...</div>
+            <div class="loader-skeletons">
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+                <div class="skeleton-card"></div>
+            </div>
         </div>
     </div>
 
@@ -126,7 +168,7 @@
             <div class="footer-links">
                 <a href="https://modrinth.com" target="_blank">Modrinth</a>
                 <a href="https://spigotmc.org" target="_blank">SpigotMC</a>
-                <a herf="https://hangar.papermc.io" target="_blank">Hangar</a>
+                <a href="https://hangar.papermc.io" target="_blank">Hangar</a>
             </div>
             <p class="copyright">© 2026 PluginMarket. 插件内容归原作者所有。</p>
         </div>
@@ -135,6 +177,9 @@
     <script src="scripts/config.js"></script>
     <script src="scripts/theme.js"></script>
     <script src="scripts/api.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+    <script src="scripts/utils.js"></script>
     <script src="scripts/cards.js"></script>
     <script src="scripts/modal.js"></script>
     <script src="scripts/app.js"></script>

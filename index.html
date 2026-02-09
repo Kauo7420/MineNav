@@ -1,537 +1,128 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="PluginMarket - Minecraft插件导航平台，聚合Modrinth和SpigotMC的插件资源">
-    <meta name="keywords" content="Minecraft, Plugin, 插件, Modrinth, SpigotMC">
-    <meta name="author" content="PluginMarket">
-    <title>PluginMarket - Minecraft 插件导航平台</title>
+    <title>PluginMarket - Minecraft 插件导航</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <!-- 跳过内容链接 (无障碍) -->
-    <a href="#main-content" class="skip-to-content">跳过导航</a>
-
-    <!-- CSS 样式表 -->
     <link rel="stylesheet" href="styles/variables.css">
     <link rel="stylesheet" href="styles/base.css">
     <link rel="stylesheet" href="styles/layout.css">
     <link rel="stylesheet" href="styles/components.css">
     <link rel="stylesheet" href="styles/sections.css">
     <link rel="stylesheet" href="styles/animations.css">
-
-    <!-- 外部资源 -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-    <!-- 基础样式 (模态框) -->
-    <style>
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: var(--z-modal);
-            align-items: center;
-            justify-content: center;
-            padding: var(--space-4);
-        }
-
-        .modal-backdrop {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: var(--z-modal-backdrop);
-            backdrop-filter: blur(4px);
-        }
-
-        .modal-content {
-            background-color: var(--color-bg-surface);
-            border-radius: var(--radius-xl);
-            overflow-y: auto;
-            max-height: 90vh;
-            width: 100%;
-            max-width: 600px;
-            box-shadow: var(--shadow-xl);
-        }
-
-        @media (max-width: 767px) {
-            .modal {
-                align-items: flex-end;
-            }
-
-            .modal-content {
-                border-radius: var(--radius-xl) var(--radius-xl) 0 0;
-                max-height: 80vh;
-            }
-        }
-
-        .modal-header {
-            display: flex;
-            gap: var(--space-4);
-            padding: var(--space-6);
-            border-bottom: 1px solid var(--color-border);
-            position: relative;
-        }
-
-        .modal-icon-wrapper {
-            flex-shrink: 0;
-        }
-
-        .modal-icon {
-            width: 80px;
-            height: 80px;
-            border-radius: var(--radius-lg);
-            background-color: var(--color-bg-elevated);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--text-4xl);
-            overflow: hidden;
-        }
-
-        .modal-icon img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .modal-icon.modrinth {
-            color: var(--color-primary-modrinth);
-        }
-
-        .modal-icon.spigot {
-            color: var(--color-primary-spigot);
-        }
-
-        .modal-icon.hangar {
-            color: var(--color-primary-hangar);
-        }
-
-        .modal-header-info {
-            flex: 1;
-        }
-
-        .modal-title {
-            font-size: var(--text-2xl);
-            font-weight: var(--font-bold);
-            margin-bottom: var(--space-2);
-        }
-
-        .modal-author,
-        .modal-platform {
-            font-size: var(--text-sm);
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-1);
-            display: flex;
-            align-items: center;
-            gap: var(--space-2);
-        }
-
-        .modal-close {
-            position: absolute;
-            top: var(--space-4);
-            right: var(--space-4);
-            width: 40px;
-            height: 40px;
-            border-radius: var(--radius-md);
-            background-color: var(--color-bg-elevated);
-            border: none;
-            cursor: pointer;
-            color: var(--color-text-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all var(--transition-fast);
-        }
-
-        .modal-close:hover {
-            background-color: var(--color-border);
-        }
-
-        .modal-body {
-            padding: var(--space-6);
-        }
-
-        .modal-description {
-            font-size: var(--text-base);
-            line-height: var(--line-height-relaxed);
-            color: var(--color-text-primary);
-            margin-bottom: var(--space-8);
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
-
-        .modal-stats {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: var(--space-4);
-            margin-bottom: var(--space-8);
-            padding: var(--space-4);
-            background-color: var(--color-bg-elevated);
-            border-radius: var(--radius-md);
-        }
-
-        .modal-stat {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .modal-stat-label {
-            font-size: var(--text-xs);
-            color: var(--color-text-secondary);
-            margin-bottom: var(--space-1);
-        }
-
-        .modal-stat-value {
-            font-size: var(--text-lg);
-            font-weight: var(--font-bold);
-            color: var(--color-primary-modrinth);
-        }
-
-        .modal-section-title {
-            font-size: var(--text-sm);
-            font-weight: var(--font-semibold);
-            margin-bottom: var(--space-3);
-            color: var(--color-text-primary);
-        }
-
-        .modal-categories {
-            margin-bottom: var(--space-6);
-        }
-
-        .modal-badges {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-2);
-        }
-
-        .modal-versions {
-            margin-bottom: var(--space-6);
-        }
-
-        .modal-version-info {
-            font-size: var(--text-sm);
-            color: var(--color-text-secondary);
-        }
-
-        .modal-footer {
-            display: flex;
-            gap: var(--space-4);
-            padding: var(--space-6);
-            border-top: 1px solid var(--color-border);
-            background-color: var(--color-bg-elevated);
-        }
-
-        .modal-footer .btn {
-            flex: 1;
-        }
-
-        @media (max-width: 767px) {
-            .modal-header {
-                padding: var(--space-4);
-            }
-
-            .modal-body {
-                padding: var(--space-4);
-            }
-
-            .modal-footer {
-                padding: var(--space-4);
-                flex-direction: column;
-            }
-
-            .modal-stats {
-                grid-template-columns: 1fr;
-                gap: var(--space-3);
-            }
-
-            .modal-icon {
-                width: 60px;
-                height: 60px;
-            }
-
-            .modal-title {
-                font-size: var(--text-lg);
-            }
-        }
-
-        .scroll-indicator {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background: linear-gradient(
-                to right,
-                var(--color-primary-modrinth),
-                var(--color-primary-spigot)
-            );
-            z-index: 9999;
-            width: 0;
-            transition: width 0.2s ease-out;
-        }
-    </style>
 </head>
-<body data-theme="dark">
-    <!-- 滚动进度指示器 -->
-    <div class="scroll-indicator"></div>
+<body>
 
-    <!-- 页眉导航栏 -->
-    <header class="header" role="banner">
-        <div class="header-content container">
-            <a href="/" class="header-logo">
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
                 <i class="fa-solid fa-cubes"></i>
                 <span>PluginMarket</span>
-            </a>
-
-            <div class="header-center">
-                <!-- 平台切换器 -->
-                <div class="platform-switcher" role="tablist" aria-label="平台选择">
-                    <button class="platform-btn active modrinth" data-platform="all" role="tab" aria-selected="true">
-                        <i class="fa-solid fa-grip"></i>
-                        <span>全部</span>
-                    </button>
-                    <button class="platform-btn modrinth" data-platform="modrinth" role="tab" aria-selected="false">
-                        <i class="fa-solid fa-leaf"></i>
-                        <span>Modrinth</span>
-                    </button>
-                    <button class="platform-btn spigot" data-platform="spigot" role="tab" aria-selected="false">
-                        <i class="fa-solid fa-cube"></i>
-                        <span>SpigotMC</span>
-                    </button>
-                    <button class="platform-btn hangar" data-platform="hangar" role="tab" aria-selected="false">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        <span>Hangar</span>
-                    </button>
-                </div>
-
-                <!-- 搜索框 -->
-                <div class="search-wrapper">
-                    <div class="input-icon-left">
-                        <i class="fa-solid fa-magnifying-glass search-icon"></i>
-                        <input 
-                            type="text" 
-                            class="search-input"
-                            placeholder="搜索插件..."
-                            aria-label="搜索插件"
-                        >
-                        <span class="search-shortcut">/</span>
-                    </div>
-                </div>
+            </div>
+            
+            <div class="platform-switcher">
+                <button class="platform-btn active" data-platform="all">
+                    <i class="fa-solid fa-layer-group"></i> 全部
+                </button>
+                <button class="platform-btn" data-platform="modrinth">
+                    <i class="fa-solid fa-cube"></i> Modrinth
+                </button>
+                <button class="platform-btn" data-platform="spigot">
+                    <i class="fa-solid fa-faucet"></i> SpigotMC
+                </button>
             </div>
 
-            <div class="header-right">
-                <!-- 主题切换 -->
-                <button class="theme-toggle" aria-label="切换主题" title="切换主题">
-                    <i class="fa-solid fa-moon"></i>
+            <div class="nav-actions">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" placeholder="搜索插件... (按 / 键)">
+                </div>
+                <button id="theme-toggle" aria-label="切换主题">
+                    <i class="fa-solid fa-sun"></i>
                 </button>
+            </div>
+        </div>
+    </nav>
 
-                <!-- 汉堡菜单 (移动端) -->
-                <button class="hamburger" aria-label="切换菜单">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
+    <header class="hero">
+        <div class="hero-content">
+            <h1>发现最好的 <span class="highlight">Minecraft</span> 服务器插件</h1>
+            <p>聚合 Modrinth 与 SpigotMC 的海量资源</p>
+            <div class="stats-container">
+                <div class="stat-item">
+                    <span id="stat-plugins" class="stat-number">0</span>
+                    <span class="stat-label">收录插件</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat-item">
+                    <span id="stat-downloads" class="stat-number">0</span>
+                    <span class="stat-label">总下载量</span>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- 英雄区域 -->
-    <section class="hero" role="region" aria-label="欢迎信息">
-        <div class="hero-content">
-            <h1 class="hero-title">
-                <i class="fa-solid fa-sparkles"></i>
-                Minecraft 插件导航
-            </h1>
-            <p class="hero-subtitle">
-                从 Modrinth、SpigotMC 和 Hangar 轻松发现、浏览和下载顶级插件
-            </p>
-
-            <div class="hero-stats">
-                <div class="stat-card">
-                    <div class="stat-number" data-stat-key="plugins">0</div>
-                    <div class="stat-label">个插件</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-number" data-stat-key="downloads">0</div>
-                    <div class="stat-label">总下载</div>
-                </div>
+    <div class="category-bar-wrapper">
+        <div class="category-bar" id="category-container">
             </div>
+    </div>
+
+    <div class="toolbar container">
+        <div class="sort-selector">
+            <select id="sort-select">
+                <option value="downloads">按下载量排序</option>
+                <option value="newest">最新发布</option>
+                <option value="updated">最近更新</option>
+            </select>
         </div>
-    </section>
-
-    <!-- 分类导航 -->
-    <section class="category-section" role="region" aria-label="分类筛选">
-        <div class="container">
-            <div class="category-wrapper">
-                <button class="category-btn active" data-category="all" aria-pressed="true">
-                    <i class="fa-solid fa-border-all"></i>
-                    <span>全部</span>
-                </button>
-                <button class="category-btn" data-category="admin" aria-pressed="false">
-                    <i class="fa-solid fa-shield-halved"></i>
-                    <span>管理工具</span>
-                </button>
-                <button class="category-btn" data-category="gameplay" aria-pressed="false">
-                    <i class="fa-solid fa-bolt"></i>
-                    <span>游戏内容</span>
-                </button>
-                <button class="category-btn" data-category="world" aria-pressed="false">
-                    <i class="fa-solid fa-globe"></i>
-                    <span>世界管理</span>
-                </button>
-                <button class="category-btn" data-category="economy" aria-pressed="false">
-                    <i class="fa-solid fa-coins"></i>
-                    <span>经济系统</span>
-                </button>
-                <button class="category-btn" data-category="chat" aria-pressed="false">
-                    <i class="fa-solid fa-comments"></i>
-                    <span>聊天系统</span>
-                </button>
-                <button class="category-btn" data-category="utility" aria-pressed="false">
-                    <i class="fa-solid fa-wrench"></i>
-                    <span>实用工具</span>
-                </button>
-                <button class="category-btn" data-category="dev" aria-pressed="false">
-                    <i class="fa-solid fa-code"></i>
-                    <span>开发工具</span>
-                </button>
-                <button class="category-btn" data-category="misc" aria-pressed="false">
-                    <i class="fa-solid fa-ellipsis"></i>
-                    <span>杂项</span>
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- 主内容区域 -->
-    <main id="main-content" class="main-content" role="main">
-        <div class="container">
-            <!-- 筛选工具栏 -->
-            <div class="filters-bar">
-                <div class="filter-left">
-                    <p class="result-count">显示 0 个插件</p>
-                </div>
-
-                <div style="display: flex; gap: var(--space-4); align-items: center;">
-                    <select class="sort-select" aria-label="排序">
-                        <option value="downloads">按下载量排序</option>
-                        <option value="newest">按最新发布排序</option>
-                        <option value="updated">按最近更新排序</option>
-                        <option value="follows">按关注数排序</option>
-                    </select>
-
-                    <div class="view-toggle" role="group" aria-label="视图切换">
-                        <button class="view-btn active" data-view="grid" aria-pressed="true" title="网格视图">
-                            <i class="fa-solid fa-grip"></i>
-                        </button>
-                        <button class="view-btn" data-view="list" aria-pressed="false" title="列表视图">
-                            <i class="fa-solid fa-list"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 插件网格 -->
-            <section class="plugin-grid" role="region" aria-label="插件列表" aria-live="polite">
-                <!-- 插件卡片将在此插入 -->
-            </section>
-
-            <!-- 加载更多按钮 -->
-            <div style="text-align: center;">
-                <button class="btn btn-primary load-more-btn">
-                    <i class="fa-solid fa-plus"></i>
-                    加载更多
-                </button>
-            </div>
-        </div>
-    </main>
-
-    <!-- 模态框 -->
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-            <!-- 模态框内容将在此插入 -->
+        <div class="view-toggle">
+            <span id="result-count">加载中...</span>
         </div>
     </div>
 
-    <!-- 页脚 -->
-    <footer class="footer" role="contentinfo">
+    <main class="container">
+        <div id="plugin-grid" class="plugin-grid">
+            </div>
+        
+        <div class="pagination">
+            <button id="load-more-btn" class="btn btn-primary">
+                加载更多 <i class="fa-solid fa-chevron-down"></i>
+            </button>
+            <div id="loading-spinner" class="spinner hidden"></div>
+        </div>
+    </main>
+
+    <div id="modal-overlay" class="modal-overlay hidden">
+        <div class="modal">
+            <button class="modal-close"><i class="fa-solid fa-xmark"></i></button>
+            <div id="modal-content" class="modal-content">
+                </div>
+        </div>
+    </div>
+
+    <footer>
         <div class="footer-content">
-            <div class="footer-grid">
-                <div class="footer-section">
-                    <h3>
-                        <i class="fa-solid fa-cubes"></i>
-                        PluginMarket
-                    </h3>
-                    <p style="font-size: var(--text-sm); color: var(--color-text-secondary); margin-bottom: var(--space-4);">
-                        为 Minecraft 玩家和服务器管理员提供一个简单的方式来发现和下载优质插件。
-                    </p>
-                </div>
-
-                <div class="footer-section">
-                    <h3>平台</h3>
-                    <a href="https://modrinth.com" target="_blank" rel="noopener noreferrer">
-                        <i class="fa-solid fa-leaf"></i>
-                        Modrinth
-                    </a>
-                    <a href="https://www.spigotmc.org" target="_blank" rel="noopener noreferrer">
-                        <i class="fa-solid fa-cube"></i>
-                        SpigotMC
-                    </a>
-                    <a href="https://hangar.papermc.io" target="_blank" rel="noopener noreferrer">
-                        <i class="fa-solid fa-paper-plane"></i>
-                        Hangar
-                    </a>
-                </div>
-
-                <div class="footer-section">
-                    <h3>快速链接</h3>
-                    <a href="#" onclick="Router.reset(); return false;">
-                        <i class="fa-solid fa-house"></i>
-                        首页
-                    </a>
-                    <a href="https://github.com" target="_blank" rel="noopener noreferrer">
-                        <i class="fa-solid fa-code"></i>
-                        源代码
-                    </a>
-                </div>
-
-                <div class="footer-section">
-                    <h3>信息</h3>
-                    <p style="font-size: var(--text-sm); color: var(--color-text-secondary);">
-                        <strong>版本：</strong> 1.0.0<br>
-                        <strong>更新：</strong> 2026年2月<br>
-                        <strong>作者：</strong> GitHub Copilot
-                    </p>
-                </div>
+            <div class="footer-brand">
+                <i class="fa-solid fa-cubes"></i> PluginMarket
             </div>
-
-            <div class="footer-bottom">
-                <p>
-                    <strong>重要提示：</strong>所有插件内容均属于各自的作者和平台。本站仅提供导航和聚合服务。
-                </p>
-                <p style="margin-top: var(--space-4);">
-                    © 2026 PluginMarket. 保留所有权利。
-                </p>
+            <div class="footer-links">
+                <a href="https://modrinth.com" target="_blank">Modrinth</a>
+                <a href="https://spigotmc.org" target="_blank">SpigotMC</a>
             </div>
+            <p class="copyright">© 2026 PluginMarket. 插件内容归原作者所有。</p>
         </div>
     </footer>
 
-    <!-- JavaScript 脚本 -->
     <script src="scripts/config.js"></script>
-    <script src="scripts/api.js"></script>
     <script src="scripts/theme.js"></script>
-    <script src="scripts/router.js"></script>
+    <script src="scripts/api.js"></script>
     <script src="scripts/cards.js"></script>
     <script src="scripts/modal.js"></script>
     <script src="scripts/app.js"></script>

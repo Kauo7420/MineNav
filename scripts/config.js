@@ -3,7 +3,6 @@ const CONFIG = {
     SPIGET_API: 'https://api.spiget.org/v2',
     HANGAR_API: 'https://hangar.papermc.io/api/v1', // 新增
     DEFAULT_LOCALE: 'zh',
-    SPIGOT_VERSION_MAP: {},
     
     // 类别映射扩展
     CATEGORIES: [
@@ -81,44 +80,37 @@ const CONFIG = {
         },
     ],
 
-    // Hangar 分类映射
-    HANGAR_CATEGORIES: 
-    {
-        'ADMIN_TOOLS': '管理工具',
-        'CHAT': '聊天',
-        'DEV_TOOLS': '开发工具',
-        'ECONOMY': '经济',
-        'GAMEPLAY': '游戏机制',
-        'GAMES': '游戏',
-        'PROTECTION': '保护',
-        'ROLE_PLAYING': '角色扮演',
-        'WORLD_MANAGEMENT': '世界管理',
-        'MISC': '其他',
-        'UNDEFINED': '未分类'
-    },
-
     TAG_TRANSLATIONS: {
         zh: {
-            'management': '管理工具',
+            'management': '管理',
             'game-mechanics': '游戏机制',
-            'worldgen': '世界',
+            'worldgen': '世界生成',
             'economy': '经济',
-            'social': '聊天社交',
-            'utility': '实用工具',
-            'protection': '保护系统',
+            'social': '社交',
+            'utility': '实用',
+            'protection': '保护',
             'library': '库',
             'plugin': '插件',
-            'ADMIN_TOOLS': '管理工具',
-            'CHAT': '聊天',
-            'DEV_TOOLS': '开发工具',
-            'ECONOMY': '经济',
-            'GAMEPLAY': '游戏机制',
-            'GAMES': '游戏',
-            'PROTECTION': '保护',
-            'ROLE_PLAYING': '角色扮演',
-            'WORLD_MANAGEMENT': '世界管理',
-            'MISC': '其他',
-            'UNDEFINED': '未分类'
+            'admin_tools': '管理工具',
+            'chat': '聊天',
+            'dev_tools': '开发工具',
+            'gameplay': '游戏机制',
+            'games': '小游戏',
+            'role_playing': '角色扮演',
+            'world_management': '世界管理',
+            'misc': '其他',
+            'undefined': '未分类',
+            'storage': '存储',
+            'cursed': '怪诞',
+            'transportation': '交通',
+            'technology': '科技',
+            'magic': '魔法',
+            'mobs': '生物',
+            'food': '食物',
+            'optimization': '优化',
+            'equipment': '装备',
+            'decoration': '装饰',
+            'adventure': '冒险',
         }
     }
 };

@@ -140,15 +140,15 @@ class ApiService {
         return await res.json();
     }
 
-    static async getModrinthVersions(id) {
-        if (!id) return [];
+    static async getModrinthVersion(versionId) {
+        if (!versionId) return null;
         try {
-            const res = await fetch(`${CONFIG.MODRINTH_API}/project/${id}/version`);
-            if (!res.ok) throw new Error('Modrinth versions API Error');
+            const res = await fetch(`${CONFIG.MODRINTH_API}/version/${versionId}`);
+            if (!res.ok) throw new Error('Modrinth version API Error');
             return await res.json();
         } catch (e) {
-            console.warn('Modrinth versions fetch error:', e);
-            return [];
+            console.warn('Modrinth version fetch error:', e);
+            return null;
         }
     }
 
@@ -161,24 +161,5 @@ class ApiService {
             console.warn('Spigot detail fetch error:', e);
             return null;
         }
-    }
-
-    static async getSpigotMinecraftVersions() {
-        if (this.spigotVersionMap) return this.spigotVersionMap;
-        try {
-            const res = await fetch(`${CONFIG.SPIGET_API}/minecraft/versions`);
-            if (!res.ok) throw new Error('Spigot minecraft versions API Error');
-            const data = await res.json();
-            this.spigotVersionMap = (data || []).reduce((acc, item) => {
-                if (item?.id && item?.name) {
-                    acc[String(item.id)] = item.name;
-                }
-                return acc;
-            }, {});
-        } catch (e) {
-            console.warn('Spigot minecraft versions fetch error:', e);
-            this.spigotVersionMap = CONFIG.SPIGOT_VERSION_MAP || {};
-        }
-        return this.spigotVersionMap;
     }
 }

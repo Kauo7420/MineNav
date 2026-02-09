@@ -6,6 +6,7 @@ const state = {
     search: '',
     page: 0,
     loading: false,
+    layout: PreferenceService.getLayout(),
     view: 'main'
 };
 
@@ -18,13 +19,13 @@ const statDownloads = document.getElementById('stat-downloads');
 const favoritesGrid = document.getElementById('favorites-grid');
 const mainView = document.getElementById('main-view');
 const favoritesView = document.getElementById('favorites-view');
-const pageLoader = document.getElementById('page-loader');
 
 // 初始化
 function init() {
     TagService.setLocale(CONFIG.DEFAULT_LOCALE);
     renderCategories();
     bindEvents();
+    applyLayout(state.layout);
     updateFavoriteView();
     fetchData(true); // Initial load
     updateStats();
@@ -114,6 +115,14 @@ function bindEvents() {
         fetchData(false);
     });
 
+    // 布局切换
+    document.querySelectorAll('.layout-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const mode = e.currentTarget.dataset.layout;
+            applyLayout(mode);
+        });
+    });
+
     // 收藏夹页面
     document.getElementById('favorites-toggle').addEventListener('click', () => {
         switchView(state.view === 'favorites' ? 'main' : 'favorites');
@@ -144,23 +153,18 @@ async function fetchData(reset) {
         loader.classList.remove('hidden');
         document.getElementById('result-count').innerText = '正在搜索...';
 
-        const results = [];
-        const promises = [];
-        
-        // Modrinth
-        if (state.platform === 'all' || state.platform === 'modrinth') {
-            promises.push(ApiService.fetchModrinth(state.search, state.category, state.sort, state.page * 12));
-        }
-        
-        // Spigot
-        if (state.platform === 'all' || state.platform === 'spigot') {
-            promises.push(ApiService.fetchSpigot(state.search, state.category, state.sort, state.page + 1));
+    const responses = await Promise.all(promises);
+    
+    responses.forEach(res => {
+        if (res.hits) {
+            res.hits.forEach(item => {
+                const entry = { data: item, platform: res.platform };
+                results.push(entry);
+            });
         }
 
-        // Hangar (新增)
-        if (state.platform === 'all' || state.platform === 'hangar') {
-            promises.push(ApiService.fetchHangar(state.search, state.category, state.sort, state.page * 12));
-        }
+    // 统一排序逻辑
+    results.sort((a, b) => sortPlugins(a, b, state.sort));
 
         const responses = await Promise.all(promises);
         
@@ -175,24 +179,6 @@ async function fetchData(reset) {
 
         // 统一排序逻辑
         results.sort((a, b) => sortPlugins(a, b, state.sort));
-
-        // 渲染
-        loader.classList.add('hidden');
-        if (results.length > 0) {
-            results.forEach(item => {
-                grid.appendChild(renderCard(item.data, item.platform));
-            });
-            loadMoreBtn.classList.remove('hidden');
-            document.getElementById('result-count').innerText = `展示 ${grid.children.length} 个结果`;
-        } else if (reset) {
-            grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-secondary)">未找到相关插件</div>';
-            document.getElementById('result-count').innerText = '0 个结果';
-        }
-    } finally {
-        state.loading = false;
-        togglePageLoading(false);
-    }
-}
 
 // 模拟统计数据动画
 function updateStats() {
@@ -266,6 +252,18 @@ function getPluginName(item) {
     return item.data.name || '';
 }
 
+function applyLayout(mode) {
+    const allowed = ['grid', 'compact', 'list'];
+    const nextMode = allowed.includes(mode) ? mode : 'grid';
+    state.layout = nextMode;
+    PreferenceService.setLayout(nextMode);
+    grid.dataset.layout = nextMode;
+    favoritesGrid.dataset.layout = nextMode;
+    document.querySelectorAll('.layout-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.layout === nextMode);
+    });
+}
+
 function switchView(view) {
     state.view = view;
     mainView.classList.toggle('hidden', view !== 'main');
@@ -298,11 +296,6 @@ function updateFavoriteButtons() {
         const isFavorite = FavoritesService.isFavorite(id);
         btn.className = `fa-${isFavorite ? 'solid' : 'regular'} fa-heart`;
     });
-}
-
-function togglePageLoading(isLoading) {
-    if (!pageLoader) return;
-    pageLoader.classList.toggle('hidden', !isLoading);
 }
 
 // 启动应用

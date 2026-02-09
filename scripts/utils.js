@@ -65,6 +65,16 @@ const FavoritesService = {
     }
 };
 
+const PreferenceService = {
+    layoutKey: 'layout-mode',
+    getLayout() {
+        return StorageService.get(this.layoutKey, 'grid');
+    },
+    setLayout(mode) {
+        StorageService.set(this.layoutKey, mode);
+    }
+};
+
 const MetadataService = {
     cache: new Map(),
     async getMetadata(item, platform) {
@@ -84,19 +94,20 @@ const MetadataService = {
         try {
             if (platform === 'modrinth') {
                 const detail = await ApiService.getModrinthDetail(id);
-                const versions = await ApiService.getModrinthVersions(id);
-                const latest = [...versions].sort((a, b) => {
-                    return new Date(b.date_published).getTime() - new Date(a.date_published).getTime();
-                })[0];
                 metadata = {
-                    supportedVersions: detail?.game_versions || latest?.game_versions || item.versions || [],
-                    latestVersion: latest?.version_number || detail?.version || detail?.latest_version || item.version_number || '未知',
+                    supportedVersions: detail?.game_versions || item.versions || [],
+                    latestVersion: detail?.version || detail?.latest_version || item.version_number || '未知',
                     links: {
                         github: detail?.source_url,
                         discord: detail?.discord_url,
                         wiki: detail?.wiki_url
                     }
                 };
+
+                if (metadata.latestVersion === detail?.latest_version && detail?.latest_version) {
+                    const versionInfo = await ApiService.getModrinthVersion(detail.latest_version);
+                    metadata.latestVersion = versionInfo?.version_number || metadata.latestVersion;
+                }
             } else if (platform === 'hangar') {
                 const slug = `${item.namespace?.owner}/${item.namespace?.slug}`;
                 const [detail, versions] = await Promise.all([
@@ -119,10 +130,8 @@ const MetadataService = {
                 };
             } else {
                 const detail = await ApiService.getSpigotDetail(id);
-                const versionMap = await ApiService.getSpigotMinecraftVersions();
-                const mappedVersions = normalizeSpigotVersions(detail?.testedVersions || detail?.versions, versionMap);
                 metadata = {
-                    supportedVersions: mappedVersions,
+                    supportedVersions: detail?.testedVersions || detail?.versions || [],
                     latestVersion: detail?.version?.name || detail?.version?.id || detail?.version || '未知',
                     links: {
                         github: detail?.links?.github || detail?.sourceCodeLink || detail?.githubUrl,
@@ -159,56 +168,12 @@ function extractHangarMinecraftVersions(versionItems = []) {
     return Array.from(versions);
 }
 
-function formatVersionRange(list = [], fallback = '未知') {
+function formatVersionList(list = [], fallback = '未知') {
     if (!list) return fallback;
     const normalized = Array.isArray(list) ? list : [list];
     if (normalized.length === 0) return fallback;
-    const versions = normalized
-        .map((entry) => normalizeVersionString(entry))
-        .filter(Boolean);
-    if (versions.length === 0) return fallback;
-    versions.sort(compareVersions);
-    const minVersion = versions[0];
-    const maxVersion = versions[versions.length - 1];
-    if (minVersion === maxVersion) return minVersion;
-    return `${minVersion} - ${maxVersion}`;
+    const limited = normalized.slice(0, 3).join(', ');
+    return normalized.length > 3 ? `${limited} +${normalized.length - 3}` : limited;
 }
 
 // Backend favorites storage can be wired here later if needed.
-
-function normalizeSpigotVersions(list, versionMap) {
-    if (!list) return [];
-    const items = Array.isArray(list) ? list : [list];
-    return items
-        .map((item) => {
-            if (typeof item === 'number' || /^[0-9]+$/.test(item)) {
-                return versionMap[String(item)] || item;
-            }
-            if (typeof item === 'object' && item?.id) {
-                return versionMap[String(item.id)] || item.name || item.id;
-            }
-            return item?.name || item;
-        })
-        .filter(Boolean);
-}
-
-function normalizeVersionString(value) {
-    if (!value) return null;
-    const text = String(value).trim();
-    const match = text.match(/(\d+)(?:\.(\d+))?(?:\.(\d+))?/);
-    if (!match) return null;
-    const parts = [match[1], match[2], match[3]].filter(Boolean).map(Number);
-    if (parts.length === 1) return `${parts[0]}.0`;
-    if (parts.length === 2) return `${parts[0]}.${parts[1]}`;
-    return `${parts[0]}.${parts[1]}.${parts[2]}`;
-}
-
-function compareVersions(a, b) {
-    const aParts = a.split('.').map(Number);
-    const bParts = b.split('.').map(Number);
-    for (let i = 0; i < Math.max(aParts.length, bParts.length); i += 1) {
-        const diff = (aParts[i] || 0) - (bParts[i] || 0);
-        if (diff !== 0) return diff;
-    }
-    return 0;
-}

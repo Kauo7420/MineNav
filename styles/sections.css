@@ -250,6 +250,30 @@
     gap: 16px;
 }
 
+.layout-toggle {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-input);
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.layout-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    display: grid;
+    place-items: center;
+}
+
+.layout-btn.active,
+.layout-btn:hover {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+}
+
 .favorites-view {
     padding: 40px 0 80px;
 }
@@ -278,72 +302,6 @@
     color: var(--text-secondary);
     border: 1px dashed var(--border-color);
     border-radius: var(--radius-md);
-}
-
-.page-loader {
-    position: fixed;
-    inset: 0;
-    z-index: 1200;
-    background: rgba(6, 10, 16, 0.85);
-    display: grid;
-    place-items: center;
-    backdrop-filter: blur(6px);
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-[data-theme="light"] .page-loader {
-    background: rgba(255, 255, 255, 0.85);
-}
-
-.page-loader.hidden {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.loader-content {
-    text-align: center;
-    max-width: 520px;
-    width: calc(100% - 40px);
-    color: var(--text-primary);
-}
-
-.loader-spinner {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    border: 4px solid var(--bg-input);
-    border-top-color: var(--primary-accent);
-    margin: 0 auto 16px;
-    animation: spin 1s linear infinite;
-}
-
-.loader-text {
-    font-size: 1rem;
-    color: var(--text-secondary);
-    margin-bottom: 20px;
-}
-
-.loader-skeletons {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 12px;
-}
-
-.skeleton-card {
-    height: 80px;
-    border-radius: 12px;
-    background: linear-gradient(90deg, var(--bg-input), var(--bg-surface), var(--bg-input));
-    background-size: 200% 100%;
-    animation: shimmer 1.4s ease infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-@keyframes shimmer {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
 }
 
 /* 模态框细节 */

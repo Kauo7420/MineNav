@@ -101,7 +101,7 @@ async function openModal(item, platform) {
             ${statsHtml}
         </p>
         <div class="detail-meta">
-            <div><i class="fa-solid fa-gamepad"></i> 支持版本：${formatVersionRange(metadata.supportedVersions, '未知')}</div>
+            <div><i class="fa-solid fa-gamepad"></i> 支持版本：${formatVersionList(metadata.supportedVersions, '未知')}</div>
             <div><i class="fa-solid fa-code-branch"></i> 最新版本：${metadata.latestVersion || '未知'}</div>
         </div>
         <div class="detail-links">

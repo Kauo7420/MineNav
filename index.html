@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PluginMarket - Minecraft 插件导航</title>
-    
+    <title>PluginMarket | MC插件导航站</title>
+
+    <link rel="icon" href="favicon.svg" type="image/x-icon">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -108,6 +109,17 @@
         </div>
         <div class="view-toggle">
             <span id="result-count">加载中...</span>
+            <div class="layout-toggle" aria-label="布局切换">
+                <button class="layout-btn" data-layout="grid" title="网格模式">
+                    <i class="fa-solid fa-border-all"></i>
+                </button>
+                <button class="layout-btn" data-layout="compact" title="紧凑模式">
+                    <i class="fa-solid fa-grip"></i>
+                </button>
+                <button class="layout-btn" data-layout="list" title="列表模式">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
         </div>
     </div>
 

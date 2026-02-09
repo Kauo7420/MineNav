@@ -108,7 +108,7 @@ async function updateCardMetadata(card, item, platform) {
 
     try {
         const metadata = await MetadataService.getMetadata(item, platform);
-        versionsEl.textContent = formatVersionRange(metadata.supportedVersions, '未知');
+        versionsEl.textContent = formatVersionList(metadata.supportedVersions, '未知');
         latestEl.textContent = metadata.latestVersion || '未知';
     } catch (error) {
         console.warn('Card metadata update failed:', error);

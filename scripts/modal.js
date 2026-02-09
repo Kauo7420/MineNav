@@ -18,17 +18,29 @@ async function openModal(item, platform) {
     modalContent.innerHTML = '<div class="spinner"></div>';
 
     let details = {};
+    let metadata = {};
     
     if (platform === 'modrinth') {
-        const fullData = await ApiService.getModrinthDetail(item.project_id);
-        details = {
-            title: fullData.title,
-            desc: fullData.body, // Markdown/HTML
-            downloads: fullData.downloads,
-            link: `https://modrinth.com/plugin/${fullData.slug}`,
-            categories: fullData.categories,
-            versions: fullData.game_versions
-        };
+        try {
+            const fullData = await ApiService.getModrinthDetail(item.project_id);
+            details = {
+                title: fullData.title,
+                desc: fullData.body, // Markdown/HTML
+                downloads: fullData.downloads,
+                link: `https://modrinth.com/plugin/${fullData.slug}`,
+                categories: fullData.categories,
+                versions: fullData.game_versions
+            };
+        } catch (error) {
+            details = {
+                title: item.title,
+                desc: item.description || '暂无详细描述',
+                downloads: item.downloads || 0,
+                link: `https://modrinth.com/plugin/${item.slug}`,
+                categories: item.categories || [],
+                versions: item.versions || []
+            };
+        }
     } 
     else if (platform === 'hangar') {
         // Hangar 详情
@@ -69,20 +81,40 @@ async function openModal(item, platform) {
         };
     }
 
+    metadata = await MetadataService.getMetadata(item, platform);
+
     // 生成模态框内容
     let statsHtml = `<i class="fa-solid fa-download"></i> ${formatNumber(details.downloads)} 下载`;
     if (details.stars !== undefined) {
         statsHtml += ` &nbsp;|&nbsp; <i class="fa-solid fa-star"></i> ${formatNumber(details.stars)} 星标`;
     }
 
+    const categories = TagService.translateList(details.categories || []);
+    const links = metadata.links || {};
+
     modalContent.innerHTML = `
         <h2>${details.title}</h2>
         <div style="margin: 10px 0; display: flex; gap: 10px; flex-wrap: wrap;">
-            ${(details.categories || []).map(c => `<span class="badge" style="background:var(--bg-input)">${c}</span>`).join('')}
+            ${categories.map(c => `<span class="badge" style="background:var(--bg-input)">${c}</span>`).join('')}
         </div>
         <p style="color:var(--text-secondary); margin-bottom: 20px;">
             ${statsHtml}
         </p>
+        <div class="detail-meta">
+            <div><i class="fa-solid fa-gamepad"></i> 支持版本：${formatVersionList(metadata.supportedVersions, '未知')}</div>
+            <div><i class="fa-solid fa-code-branch"></i> 最新版本：${metadata.latestVersion || '未知'}</div>
+        </div>
+        <div class="detail-links">
+            <a href="${links.github || '#'}" target="_blank" class="${links.github ? '' : 'disabled'}">
+                <i class="fa-brands fa-github"></i> GitHub
+            </a>
+            <a href="${links.discord || '#'}" target="_blank" class="${links.discord ? '' : 'disabled'}">
+                <i class="fa-brands fa-discord"></i> Discord
+            </a>
+            <a href="${links.wiki || '#'}" target="_blank" class="${links.wiki ? '' : 'disabled'}">
+                <i class="fa-solid fa-book"></i> 文档 / Wiki
+            </a>
+        </div>
         <div style="background:var(--bg-input); padding:15px; border-radius:8px; margin-bottom:20px; max-height:300px; overflow-y:auto; line-height:1.6;">
             ${details.desc}
         </div>

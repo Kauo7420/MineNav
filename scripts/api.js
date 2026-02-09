@@ -1,5 +1,6 @@
 // API 处理层
 class ApiService {
+    static spigotVersionMap = null;
     // 获取 Modrinth 插件
     static async fetchModrinth(query, category, sort, offset) {
         let url = `${CONFIG.MODRINTH_API}/search?query=${query || ''}&limit=12&offset=${offset}`;
@@ -137,5 +138,47 @@ class ApiService {
     static async getModrinthDetail(id) {
         const res = await fetch(`${CONFIG.MODRINTH_API}/project/${id}`);
         return await res.json();
+    }
+
+    static async getModrinthVersions(id) {
+        if (!id) return [];
+        try {
+            const res = await fetch(`${CONFIG.MODRINTH_API}/project/${id}/version`);
+            if (!res.ok) throw new Error('Modrinth versions API Error');
+            return await res.json();
+        } catch (e) {
+            console.warn('Modrinth versions fetch error:', e);
+            return [];
+        }
+    }
+
+    static async getSpigotDetail(id) {
+        try {
+            const res = await fetch(`${CONFIG.SPIGET_API}/resources/${id}`);
+            if (!res.ok) throw new Error('Spigot detail API Error');
+            return await res.json();
+        } catch (e) {
+            console.warn('Spigot detail fetch error:', e);
+            return null;
+        }
+    }
+
+    static async getSpigotMinecraftVersions() {
+        if (this.spigotVersionMap) return this.spigotVersionMap;
+        try {
+            const res = await fetch(`${CONFIG.SPIGET_API}/minecraft/versions`);
+            if (!res.ok) throw new Error('Spigot minecraft versions API Error');
+            const data = await res.json();
+            this.spigotVersionMap = (data || []).reduce((acc, item) => {
+                if (item?.id && item?.name) {
+                    acc[String(item.id)] = item.name;
+                }
+                return acc;
+            }, {});
+        } catch (e) {
+            console.warn('Spigot minecraft versions fetch error:', e);
+            this.spigotVersionMap = CONFIG.SPIGOT_VERSION_MAP || {};
+        }
+        return this.spigotVersionMap;
     }
 }

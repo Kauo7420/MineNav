@@ -2,6 +2,8 @@ const CONFIG = {
     MODRINTH_API: 'https://api.modrinth.com/v2',
     SPIGET_API: 'https://api.spiget.org/v2',
     HANGAR_API: 'https://hangar.papermc.io/api/v1', // 新增
+    DEFAULT_LOCALE: 'zh',
+    SPIGOT_VERSION_MAP: {},
     
     // 类别映射扩展
     CATEGORIES: [
@@ -93,5 +95,30 @@ const CONFIG = {
         'WORLD_MANAGEMENT': '世界管理',
         'MISC': '其他',
         'UNDEFINED': '未分类'
+    },
+
+    TAG_TRANSLATIONS: {
+        zh: {
+            'management': '管理工具',
+            'game-mechanics': '游戏机制',
+            'worldgen': '世界',
+            'economy': '经济',
+            'social': '聊天社交',
+            'utility': '实用工具',
+            'protection': '保护系统',
+            'library': '库',
+            'plugin': '插件',
+            'ADMIN_TOOLS': '管理工具',
+            'CHAT': '聊天',
+            'DEV_TOOLS': '开发工具',
+            'ECONOMY': '经济',
+            'GAMEPLAY': '游戏机制',
+            'GAMES': '游戏',
+            'PROTECTION': '保护',
+            'ROLE_PLAYING': '角色扮演',
+            'WORLD_MANAGEMENT': '世界管理',
+            'MISC': '其他',
+            'UNDEFINED': '未分类'
+        }
     }
 };

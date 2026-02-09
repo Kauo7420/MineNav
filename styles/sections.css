@@ -63,6 +63,11 @@
     gap: 14px;
 }
 
+.nav-social {
+    display: flex;
+    gap: 8px;
+}
+
 .theme-toggle {
     width: 42px;
     height: 42px;
@@ -228,6 +233,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
 }
 #sort-select {
     padding: 8px;
@@ -235,6 +242,66 @@
     background: var(--bg-surface);
     color: var(--text-primary);
     border: 1px solid var(--border-color);
+}
+
+.view-toggle {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.layout-toggle {
+    display: flex;
+    gap: 8px;
+    background: var(--bg-input);
+    padding: 4px;
+    border-radius: 10px;
+}
+
+.layout-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-secondary);
+    display: grid;
+    place-items: center;
+}
+
+.layout-btn.active,
+.layout-btn:hover {
+    background: var(--bg-surface);
+    color: var(--text-primary);
+}
+
+.favorites-view {
+    padding: 40px 0 80px;
+}
+
+.favorites-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    gap: 20px;
+}
+
+.favorites-header h2 {
+    font-size: 1.8rem;
+    margin-bottom: 6px;
+}
+
+.favorites-back {
+    width: auto;
+}
+
+.empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 40px;
+    color: var(--text-secondary);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius-md);
 }
 
 /* 模态框细节 */

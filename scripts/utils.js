@@ -93,30 +93,35 @@ const MetadataService = {
         let metadata = fallback;
         try {
             if (platform === 'modrinth') {
-                const detail = await ApiService.getModrinthDetail(id);
+                const [detail, versions] = await Promise.all([
+                    ApiService.getModrinthDetail(id),
+                    ApiService.getModrinthVersions(id)
+                ]);
+                const versionItems = Array.isArray(versions) ? versions : [];
+                const latestEntry = getLatestByDate(versionItems, 'date_published');
+                const supportedVersions = collectModrinthVersions(detail, versionItems, item);
+
                 metadata = {
-                    supportedVersions: detail?.game_versions || item.versions || [],
-                    latestVersion: detail?.version || detail?.latest_version || item.version_number || '未知',
+                    supportedVersions: supportedVersions,
+                    latestVersion: latestEntry?.version_number || detail?.version || detail?.latest_version || item.version_number || '未知',
                     links: {
                         github: detail?.source_url,
                         discord: detail?.discord_url,
                         wiki: detail?.wiki_url
                     }
                 };
-
-                if (metadata.latestVersion === detail?.latest_version && detail?.latest_version) {
-                    const versionInfo = await ApiService.getModrinthVersion(detail.latest_version);
-                    metadata.latestVersion = versionInfo?.version_number || metadata.latestVersion;
-                }
             } else if (platform === 'hangar') {
-                const slug = `${item.namespace?.owner}/${item.namespace?.slug}`;
+                const slug = getHangarProjectSlug(item);
+                if (!slug) {
+                    return fallback;
+                }
                 const [detail, versions] = await Promise.all([
                     ApiService.getHangarDetail(slug),
                     ApiService.getHangarVersions(slug)
                 ]);
 
                 const versionItems = versions?.result || [];
-                const latestEntry = versionItems[0] || {};
+                const latestEntry = getLatestByDate(versionItems, 'createdAt') || {};
                 const supportedVersions = extractHangarMinecraftVersions(versionItems);
 
                 metadata = {
@@ -129,10 +134,17 @@ const MetadataService = {
                     }
                 };
             } else {
-                const detail = await ApiService.getSpigotDetail(id);
+                const [detail, versions, minecraftVersions] = await Promise.all([
+                    ApiService.getSpigotDetail(id),
+                    ApiService.getSpigotVersions(id),
+                    ApiService.getSpigotMinecraftVersions()
+                ]);
+                const versionItems = Array.isArray(versions) ? versions : [];
+                const latestEntry = getLatestByDate(versionItems, 'releaseDate');
+                const testedVersions = resolveSpigotVersions(detail, minecraftVersions);
                 metadata = {
-                    supportedVersions: detail?.testedVersions || detail?.versions || [],
-                    latestVersion: detail?.version?.name || detail?.version?.id || detail?.version || '未知',
+                    supportedVersions: testedVersions,
+                    latestVersion: latestEntry?.name || latestEntry?.version || detail?.version?.name || detail?.version || '未知',
                     links: {
                         github: detail?.links?.github || detail?.sourceCodeLink || detail?.githubUrl,
                         discord: detail?.links?.discord || detail?.discordUrl,
@@ -151,8 +163,25 @@ const MetadataService = {
 
 function getPluginId(item, platform) {
     if (platform === 'modrinth') return item.project_id || item.id || item.slug;
-    if (platform === 'hangar') return item.namespace?.slug || item.name;
+    if (platform === 'hangar') return item.namespace?.slug || item.slug || item.name;
     return item.id;
+}
+
+function getHangarProjectSlug(item) {
+    const owner = item?.namespace?.owner || item?.owner?.name || item?.owner;
+    const slug = item?.namespace?.slug || item?.slug || item?.name;
+    if (!owner || !slug) return '';
+    return `${owner}/${slug}`;
+}
+
+function collectModrinthVersions(detail, versionItems, item) {
+    const versions = new Set();
+    (detail?.game_versions || []).forEach(version => versions.add(version));
+    (item?.versions || []).forEach(version => versions.add(version));
+    versionItems.forEach(version => {
+        (version?.game_versions || []).forEach(gameVersion => versions.add(gameVersion));
+    });
+    return Array.from(versions);
 }
 
 function extractHangarMinecraftVersions(versionItems = []) {
@@ -171,9 +200,76 @@ function extractHangarMinecraftVersions(versionItems = []) {
 function formatVersionList(list = [], fallback = '未知') {
     if (!list) return fallback;
     const normalized = Array.isArray(list) ? list : [list];
-    if (normalized.length === 0) return fallback;
-    const limited = normalized.slice(0, 3).join(', ');
-    return normalized.length > 3 ? `${limited} +${normalized.length - 3}` : limited;
+    const unique = Array.from(new Set(normalized.filter(Boolean)));
+    if (unique.length === 0) return fallback;
+    const sorted = unique.sort(compareMinecraftVersions);
+    const first = sorted[0];
+    const last = sorted[sorted.length - 1];
+    if (!first || !last) return fallback;
+    if (first === last) return first;
+    return `${first} - ${last}`;
+}
+
+function compareMinecraftVersions(a, b) {
+    const aParts = parseVersionParts(a);
+    const bParts = parseVersionParts(b);
+    const maxLength = Math.max(aParts.length, bParts.length);
+    for (let i = 0; i < maxLength; i += 1) {
+        const aVal = aParts[i] ?? 0;
+        const bVal = bParts[i] ?? 0;
+        if (aVal !== bVal) return aVal - bVal;
+    }
+    return `${a}`.localeCompare(`${b}`);
+}
+
+function parseVersionParts(version) {
+    if (!version) return [];
+    const match = `${version}`.match(/\d+(?:\.\d+)*/);
+    if (!match) return [];
+    return match[0].split('.').map(part => Number.parseInt(part, 10));
+}
+
+function getLatestByDate(items = [], key) {
+    if (!Array.isArray(items) || items.length === 0) return null;
+    return items.reduce((latest, current) => {
+        const currentDate = new Date(current?.[key] || 0).getTime();
+        const latestDate = new Date(latest?.[key] || 0).getTime();
+        return currentDate > latestDate ? current : latest;
+    }, items[0]);
+}
+
+function resolveSpigotVersions(detail, minecraftVersions) {
+    const versions = detail?.testedVersions || detail?.versions || [];
+    const normalized = Array.isArray(versions) ? versions : [versions];
+    if (!Array.isArray(minecraftVersions) || minecraftVersions.length === 0) {
+        return normalized.map(String);
+    }
+    const versionMap = new Map(minecraftVersions.map(version => [version.id, version.name]));
+    return normalized.map(version => {
+        if (typeof version === 'number') return versionMap.get(version) || `${version}`;
+        if (typeof version === 'object' && version?.id) return versionMap.get(version.id) || `${version.name || version.id}`;
+        return `${version}`;
+    });
+}
+
+function escapeHtml(text) {
+    const map = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#039;'
+    };
+    return `${text}`.replace(/[&<>"']/g, match => map[match]);
+}
+
+function renderMarkdownContent(markdown) {
+    if (!markdown) return '';
+    if (window.marked && window.DOMPurify) {
+        const html = window.marked.parse(markdown, { breaks: true, gfm: true });
+        return window.DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
+    }
+    return escapeHtml(markdown).replace(/\n/g, '<br>');
 }
 
 // Backend favorites storage can be wired here later if needed.

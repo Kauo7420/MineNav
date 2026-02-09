@@ -85,14 +85,52 @@ function bindEvents() {
         });
     });
 
-    // 搜索 (防抖)
-    let debounceTimer;
-    document.getElementById('search-input').addEventListener('input', (e) => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-            state.search = e.target.value;
-            fetchData(true);
-        }, 400);
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const clearBtn = document.getElementById('search-clear');
+
+    const applySearch = () => {
+        state.search = searchInput.value.trim();
+        fetchData(true);
+    };
+
+    searchBtn?.addEventListener('click', () => {
+        applySearch();
+    });
+
+    searchInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            applySearch();
+        }
+    });
+
+    const updateClearVisibility = () => {
+        const hasValue = Boolean(searchInput.value.trim());
+        clearBtn?.classList.toggle('visible', hasValue);
+    };
+
+    searchInput.addEventListener('input', updateClearVisibility);
+    updateClearVisibility();
+
+    clearBtn?.addEventListener('click', () => {
+        searchInput.value = '';
+        clearBtn.classList.remove('visible');
+        state.search = '';
+        state.category = 'all';
+        state.sort = 'downloads';
+        state.platform = 'all';
+
+        document.getElementById('sort-select').value = 'downloads';
+        updateStats();
+        document.querySelectorAll('.cat-pill').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.id === 'all');
+        });
+        document.querySelectorAll('.platform-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.platform === 'all');
+        });
+        document.documentElement.style.setProperty('--primary-accent', 'var(--modrinth-green)');
+        fetchData(true);
     });
 
     // 键盘快捷键 /
@@ -181,7 +219,11 @@ async function fetchData(reset) {
     });
 
     // 统一排序逻辑
-    results.sort((a, b) => sortPlugins(a, b, state.sort));
+    if (state.sort === 'random') {
+        shuffleResults(results);
+    } else {
+        results.sort((a, b) => sortPlugins(a, b, state.sort));
+    }
 
     // 渲染
     loader.classList.add('hidden');
@@ -223,6 +265,7 @@ function animateValue(obj, start, end, duration) {
 }
 
 function sortPlugins(a, b, sort) {
+    if (sort === 'random') return 0;
     if (sort === 'downloads') {
         const valA = a.platform === 'hangar' ? a.data.stats?.downloads || 0 : a.data.downloads || 0;
         const valB = b.platform === 'hangar' ? b.data.stats?.downloads || 0 : b.data.downloads || 0;
@@ -250,6 +293,13 @@ function sortPlugins(a, b, sort) {
     }
 
     return 0;
+}
+
+function shuffleResults(results) {
+    for (let i = results.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [results[i], results[j]] = [results[j], results[i]];
+    }
 }
 
 function getPluginDate(item, type) {

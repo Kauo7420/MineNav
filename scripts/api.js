@@ -151,6 +151,18 @@ class ApiService {
         }
     }
 
+    static async getModrinthVersions(projectId) {
+        if (!projectId) return [];
+        try {
+            const res = await fetch(`${CONFIG.MODRINTH_API}/project/${projectId}/version`);
+            if (!res.ok) throw new Error('Modrinth versions API Error');
+            return await res.json();
+        } catch (e) {
+            console.warn('Modrinth versions fetch error:', e);
+            return [];
+        }
+    }
+
     static async getSpigotDetail(id) {
         try {
             const res = await fetch(`${CONFIG.SPIGET_API}/resources/${id}`);
@@ -159,6 +171,29 @@ class ApiService {
         } catch (e) {
             console.warn('Spigot detail fetch error:', e);
             return null;
+        }
+    }
+
+    static async getSpigotVersions(id) {
+        if (!id) return [];
+        try {
+            const res = await fetch(`${CONFIG.SPIGET_API}/resources/${id}/versions`);
+            if (!res.ok) throw new Error('Spigot versions API Error');
+            return await res.json();
+        } catch (e) {
+            console.warn('Spigot versions fetch error:', e);
+            return [];
+        }
+    }
+
+    static async getSpigotMinecraftVersions() {
+        try {
+            const res = await fetch(`${CONFIG.SPIGET_API}/minecraft/versions`);
+            if (!res.ok) throw new Error('Spigot minecraft versions API Error');
+            return await res.json();
+        } catch (e) {
+            console.warn('Spigot minecraft versions fetch error:', e);
+            return [];
         }
     }
 }

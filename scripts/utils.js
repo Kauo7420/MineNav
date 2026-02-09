@@ -122,7 +122,7 @@ const MetadataService = {
 
                 const versionItems = versions?.result || [];
                 const latestEntry = getLatestByDate(versionItems, 'createdAt') || {};
-                const supportedVersions = extractHangarMinecraftVersions(versionItems);
+                const supportedVersions = extractHangarMinecraftVersionsFromDetail(detail);
 
                 metadata = {
                     supportedVersions: supportedVersions,
@@ -184,17 +184,17 @@ function collectModrinthVersions(detail, versionItems, item) {
     return Array.from(versions);
 }
 
-function extractHangarMinecraftVersions(versionItems = []) {
-    const versions = new Set();
-    versionItems.forEach(version => {
-        const platforms = version?.platformDependencies || {};
-        Object.values(platforms).forEach(entries => {
-            (entries || []).forEach(entry => {
-                if (entry?.version) versions.add(entry.version);
-            });
-        });
-    });
-    return Array.from(versions);
+function extractHangarMinecraftVersionsFromDetail(detail) {
+    try {
+        const paperVersions = detail?.supportedPlatforms?.PAPER;
+        if (!Array.isArray(paperVersions) || paperVersions.length === 0) {
+            return [];
+        }
+        return paperVersions.filter(Boolean);
+    } catch (e) {
+        console.warn('Invalid Hangar supportedPlatforms structure:', e);
+        return [];
+    }
 }
 
 function formatVersionList(list = [], fallback = '未知') {

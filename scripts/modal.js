@@ -85,7 +85,7 @@ async function openModal(item, platform) {
     else { // spigot
         details = {
             title: item.name,
-            desc: item.tag + "<br><br>更多详情请点击下方链接前往 SpigotMC 查看👇👇👇",
+            desc: item.tag + "<br><br>更多详情请点击下方链接前往 SpigotMC 查看。",
             downloads: item.downloads,
             link: `https://www.spigotmc.org/resources/${item.id}`,
             categories: [item.category?.name || 'Plugin'],

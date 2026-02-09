@@ -17,56 +17,8 @@ const StorageService = {
     }
 };
 
-const I18nService = {
-    key: 'locale',
-    locale: CONFIG.DEFAULT_LOCALE || 'en',
-    init() {
-        const stored = StorageService.get(this.key, this.locale);
-        this.setLocale(stored, { persist: false });
-    },
-    setLocale(locale, options = {}) {
-        const { persist = true } = options;
-        const nextLocale = I18N_PACKS[locale] ? locale : (CONFIG.DEFAULT_LOCALE || 'en');
-        this.locale = nextLocale;
-        if (persist) {
-            StorageService.set(this.key, nextLocale);
-        }
-        document.documentElement.lang = nextLocale;
-        TagService.setLocale(nextLocale);
-        this.apply();
-        window.dispatchEvent(new CustomEvent('i18n:change', { detail: { locale: nextLocale } }));
-    },
-    t(key, params = {}) {
-        const pack = I18N_PACKS[this.locale] || {};
-        const fallbackPack = I18N_PACKS[CONFIG.DEFAULT_LOCALE || 'en'] || {};
-        const template = pack[key] || fallbackPack[key] || key;
-        return template.replace(/\{(\w+)\}/g, (match, token) => {
-            const value = params[token];
-            return value === undefined ? match : String(value);
-        });
-    },
-    apply(root = document) {
-        root.querySelectorAll('[data-i18n]').forEach(node => {
-            node.textContent = this.t(node.dataset.i18n);
-        });
-        root.querySelectorAll('[data-i18n-html]').forEach(node => {
-            node.innerHTML = this.t(node.dataset.i18nHtml);
-        });
-        root.querySelectorAll('[data-i18n-placeholder]').forEach(node => {
-            node.setAttribute('placeholder', this.t(node.dataset.i18nPlaceholder));
-        });
-        root.querySelectorAll('[data-i18n-title]').forEach(node => {
-            node.setAttribute('title', this.t(node.dataset.i18nTitle));
-        });
-        root.querySelectorAll('[data-i18n-aria-label]').forEach(node => {
-            node.setAttribute('aria-label', this.t(node.dataset.i18nAriaLabel));
-        });
-        document.title = this.t('page.title');
-    }
-};
-
 const TagService = {
-    locale: CONFIG.DEFAULT_LOCALE || 'zh-CN',
+    locale: CONFIG.DEFAULT_LOCALE || 'zh',
     setLocale(locale) {
         this.locale = locale;
     },
@@ -134,7 +86,7 @@ const MetadataService = {
 
         const fallback = {
             supportedVersions: [],
-            latestVersion: I18nService.t('card.unknown'),
+            latestVersion: '未知',
             links: {}
         };
 
@@ -151,8 +103,7 @@ const MetadataService = {
 
                 metadata = {
                     supportedVersions: supportedVersions,
-                    latestVersion: latestEntry?.version_number || detail?.version || detail?.latest_version || item.version_number || I18nService.t('card.unknown'),
-                    loaders: collectModrinthLoaders(detail, versionItems, item),
+                    latestVersion: latestEntry?.version_number || detail?.version || detail?.latest_version || item.version_number || '未知',
                     links: {
                         github: detail?.source_url,
                         discord: detail?.discord_url,
@@ -171,13 +122,11 @@ const MetadataService = {
 
                 const versionItems = versions?.result || [];
                 const latestEntry = getLatestByDate(versionItems, 'createdAt') || {};
-                const supportedVersions = extractHangarSupportedVersions(detail, versionItems);
-                const supportsFolia = (detail?.tags || []).includes('SUPPORTS_FOLIA');
+                const supportedVersions = extractHangarMinecraftVersions(versionItems);
 
                 metadata = {
                     supportedVersions: supportedVersions,
-                    latestVersion: latestEntry.version || latestEntry.name || latestEntry.versionString || I18nService.t('card.unknown'),
-                    supportsFolia,
+                    latestVersion: latestEntry.version || latestEntry.name || latestEntry.versionString || '未知',
                     links: {
                         github: detail?.links?.github || detail?.links?.source || detail?.settings?.source,
                         discord: detail?.links?.discord,
@@ -195,7 +144,7 @@ const MetadataService = {
                 const testedVersions = resolveSpigotVersions(detail, minecraftVersions);
                 metadata = {
                     supportedVersions: testedVersions,
-                    latestVersion: latestEntry?.name || latestEntry?.version || detail?.version?.name || detail?.version || I18nService.t('card.unknown'),
+                    latestVersion: latestEntry?.name || latestEntry?.version || detail?.version?.name || detail?.version || '未知',
                     links: {
                         github: detail?.links?.github || detail?.sourceCodeLink || detail?.githubUrl,
                         discord: detail?.links?.discord || detail?.discordUrl,
@@ -235,38 +184,6 @@ function collectModrinthVersions(detail, versionItems, item) {
     return Array.from(versions);
 }
 
-function collectModrinthLoaders(detail, versionItems, item) {
-    const loaders = new Set();
-    (detail?.loaders || []).forEach(loader => loaders.add(loader));
-    (item?.loaders || []).forEach(loader => loaders.add(loader));
-    versionItems.forEach(version => {
-        (version?.loaders || []).forEach(loader => loaders.add(loader));
-    });
-    const allowed = new Set([
-        'bukkit',
-        'bungeecord',
-        'fabric',
-        'folia',
-        'forge',
-        'neoforge',
-        'paper',
-        'purpur',
-        'quilt',
-        'spigot',
-        'velocity',
-        'waterfall'
-    ]);
-    return Array.from(loaders).filter(loader => allowed.has(loader));
-}
-
-function extractHangarSupportedVersions(detail, versionItems = []) {
-    const supported = detail?.supportedPlatforms?.PAPER;
-    if (Array.isArray(supported) && supported.length > 0) {
-        return supported;
-    }
-    return extractHangarMinecraftVersions(versionItems);
-}
-
 function extractHangarMinecraftVersions(versionItems = []) {
     const versions = new Set();
     versionItems.forEach(version => {
@@ -280,7 +197,7 @@ function extractHangarMinecraftVersions(versionItems = []) {
     return Array.from(versions);
 }
 
-function formatVersionList(list = [], fallback = I18nService.t('card.unknown')) {
+function formatVersionList(list = [], fallback = '未知') {
     if (!list) return fallback;
     const normalized = Array.isArray(list) ? list : [list];
     const unique = Array.from(new Set(normalized.filter(Boolean)));
@@ -290,7 +207,7 @@ function formatVersionList(list = [], fallback = I18nService.t('card.unknown')) 
     const last = sorted[sorted.length - 1];
     if (!first || !last) return fallback;
     if (first === last) return first;
-    return `${first} – ${last}`;
+    return `${first} - ${last}`;
 }
 
 function compareMinecraftVersions(a, b) {
@@ -310,25 +227,6 @@ function parseVersionParts(version) {
     const match = `${version}`.match(/\d+(?:\.\d+)*/);
     if (!match) return [];
     return match[0].split('.').map(part => Number.parseInt(part, 10));
-}
-
-function formatLoaderLabel(loader) {
-    if (!loader) return '';
-    const labels = {
-        bukkit: 'Bukkit',
-        bungeecord: 'BungeeCord',
-        fabric: 'Fabric',
-        folia: 'Folia',
-        forge: 'Forge',
-        neoforge: 'NeoForge',
-        paper: 'Paper',
-        purpur: 'Purpur',
-        quilt: 'Quilt',
-        spigot: 'Spigot',
-        velocity: 'Velocity',
-        waterfall: 'Waterfall'
-    };
-    return labels[loader] || loader;
 }
 
 function getLatestByDate(items = [], key) {

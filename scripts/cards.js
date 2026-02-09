@@ -9,7 +9,7 @@ function renderCard(item, platform) {
         desc = item.description;
         iconUrl = item.icon_url;
         downloads = item.downloads;
-        date = new Date(item.date_modified).toLocaleDateString('zh-CN');
+        date = new Date(item.date_modified).toLocaleDateString(I18nService.locale);
         link = `https://modrinth.com/plugin/${item.slug}`;
         categories = item.categories || [];
     } 
@@ -17,22 +17,22 @@ function renderCard(item, platform) {
         // Hangar 数据映射
         id = item.namespace?.slug || item.name;
         title = item.name;
-        author = item.namespace?.owner || 'Hangar User';
-        desc = item.description || '暂无描述';
+        author = item.namespace?.owner || I18nService.t('card.hangarUser');
+        desc = item.description || I18nService.t('card.noDescription');
         iconUrl = item.avatarUrl;
         downloads = item.stats?.downloads || 0;
-        date = new Date(item.lastUpdated).toLocaleDateString('zh-CN');
+        date = new Date(item.lastUpdated).toLocaleDateString(I18nService.locale);
         link = `https://hangar.papermc.io/${item.namespace?.owner}/${item.namespace?.slug}`;
         categories = [item.category].filter(Boolean);
     }
     else { // spigot
         id = item.id;
         title = item.name;
-        author = 'SpigotUser';
+        author = I18nService.t('card.spigotUser');
         desc = item.tag;
         iconUrl = item.icon.url ? `https://www.spigotmc.org/${item.icon.url}` : `https://www.spigotmc.org/data/resource_icons/${Math.floor(id/1000)}/${id}.jpg`;
         downloads = item.downloads;
-        date = new Date(item.updateDate * 1000).toLocaleDateString('zh-CN');
+        date = new Date(item.updateDate * 1000).toLocaleDateString(I18nService.locale);
         link = `https://www.spigotmc.org/resources/${id}`;
         categories = [item.category?.name || 'Plugin'];
     }
@@ -58,29 +58,30 @@ function renderCard(item, platform) {
     card.dataset.pluginId = `${platform}:${id}`;
 
     card.innerHTML = `
-        <button class="favorite-btn" aria-label="收藏插件" title="收藏">
+        <button class="favorite-btn" aria-label="${I18nService.t('card.favorite')}" title="${I18nService.t('card.favorite')}">
             <i class="fa-${FavoritesService.isFavorite(`${platform}:${id}`) ? 'solid' : 'regular'} fa-heart"></i>
         </button>
         <div class="card-header">
             ${imgHtml}
             <div class="card-title">
                 <h3>${title}</h3>
-                <div class="card-author"><i class="fa-solid fa-user"></i> ${author}</div>
+                <div class="card-author"><i class="fa-solid fa-user"></i> ${I18nService.t('card.author')}: ${author}</div>
             </div>
         </div>
-        <div class="card-desc">${desc || '暂无描述'}</div>
+        <div class="card-desc">${desc || I18nService.t('card.noDescription')}</div>
         <div class="card-tags">
             ${TagService.translateList(categories).map(tag => `<span class="tag">${tag}</span>`).join('')}
         </div>
+        <div class="card-flags"></div>
         <div class="card-extra">
-            <span title="支持版本"><i class="fa-solid fa-gamepad"></i> <span class="metadata-versions">加载中...</span></span>
-            <span title="最新版本"><i class="fa-solid fa-code-branch"></i> <span class="metadata-latest">加载中...</span></span>
+            <span title="${I18nService.t('card.supportedVersions')}"><i class="fa-solid fa-gamepad"></i> <span class="metadata-versions">${I18nService.t('card.loading')}</span></span>
+            <span title="${I18nService.t('card.latestVersion')}"><i class="fa-solid fa-code-branch"></i> <span class="metadata-latest">${I18nService.t('card.loading')}</span></span>
         </div>
         <div class="card-meta">
             ${platformBadge}
             <div>
-                <span title="下载量"><i class="fa-solid fa-download"></i> ${formatNumber(downloads)}</span>
-                <span title="更新时间" style="margin-left:8px"><i class="fa-regular fa-clock"></i> ${date}</span>
+                <span title="${I18nService.t('card.downloads')}"><i class="fa-solid fa-download"></i> ${formatNumber(downloads)}</span>
+                <span title="${I18nService.t('card.updated')}" style="margin-left:8px"><i class="fa-regular fa-clock"></i> ${date}</span>
             </div>
         </div>
     `;
@@ -105,14 +106,42 @@ function formatNumber(num) {
 async function updateCardMetadata(card, item, platform) {
     const versionsEl = card.querySelector('.metadata-versions');
     const latestEl = card.querySelector('.metadata-latest');
+    const flagsEl = card.querySelector('.card-flags');
 
     try {
         const metadata = await MetadataService.getMetadata(item, platform);
-        versionsEl.textContent = formatVersionList(metadata.supportedVersions, '未知');
-        latestEl.textContent = metadata.latestVersion || '未知';
+        versionsEl.textContent = formatVersionList(metadata.supportedVersions, I18nService.t('card.unknown'));
+        latestEl.textContent = metadata.latestVersion || I18nService.t('card.unknown');
+        if (flagsEl) {
+            flagsEl.innerHTML = '';
+            if (platform === 'modrinth') {
+                const loaders = metadata.loaders || [];
+                const loaderBadges = loaders.map(loader => `
+                    <span class="loader-badge loader-${loader}">${formatLoaderLabel(loader)}</span>
+                `).join('');
+                flagsEl.innerHTML = loaderBadges;
+                flagsEl.classList.toggle('hidden', loaderBadges.length === 0);
+            }
+            if (platform === 'hangar') {
+                const supported = metadata.supportsFolia;
+                if (supported !== undefined) {
+                    const label = supported ? I18nService.t('folia.supported') : I18nService.t('folia.unsupported');
+                    const icon = supported ? 'fa-circle-check' : 'fa-circle-xmark';
+                    flagsEl.innerHTML = `
+                        <span class="folia-status ${supported ? 'supported' : 'unsupported'}">
+                            <i class="fa-solid ${icon}"></i> ${label}
+                        </span>
+                    `;
+                    flagsEl.classList.remove('hidden');
+                }
+            }
+            if (platform !== 'modrinth' && platform !== 'hangar') {
+                flagsEl.classList.add('hidden');
+            }
+        }
     } catch (error) {
         console.warn('Card metadata update failed:', error);
-        versionsEl.textContent = '未知';
-        latestEl.textContent = '未知';
+        versionsEl.textContent = I18nService.t('card.unknown');
+        latestEl.textContent = I18nService.t('card.unknown');
     }
 }

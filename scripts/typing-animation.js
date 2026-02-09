@@ -8,7 +8,7 @@ class TypingAnimation {
         if (!this.element) return;
 
         // 配置项
-        this.phrases = options.phrases || ['发现最好的', '探索顶尖的', '寻找优质的'];
+        this.phrases = options.phrases || [I18nService.t('hero.prefix')];
         this.typingSpeed = options.typingSpeed || 100; // 打字速度 (ms)
         this.deletingSpeed = options.deletingSpeed || 50; // 删除速度 (ms)
         this.pauseDuration = options.pauseDuration || 2000; // 暂停时长 (ms)
@@ -79,6 +79,16 @@ class TypingAnimation {
             this.element.innerHTML = this.phrases[0];
         }
     }
+
+    updatePhrases(phrases) {
+        if (!Array.isArray(phrases) || phrases.length === 0) return;
+        this.phrases = phrases;
+        this.currentPhraseIndex = 0;
+        this.currentCharIndex = 0;
+        this.isDeleting = false;
+        this.isPaused = false;
+        this.start();
+    }
 }
 
 // ============================================
@@ -86,16 +96,17 @@ class TypingAnimation {
 // ============================================
 
 document.addEventListener('DOMContentLoaded', () => {
-    new TypingAnimation('hero-typing-text', {
-        phrases: [
-            '发现最好的',
-            '探索顶尖的',
-            '寻找优质的',
-            '体验精选的'
-        ],
+    const typingAnimation = new TypingAnimation('hero-typing-text', {
+        phrases: I18N_PACKS[I18nService.locale]?.['hero.typingPhrases'] || [I18nService.t('hero.prefix')],
         typingSpeed: 120,
         deletingSpeed: 60,
         pauseDuration: 2000,
         loop: true
+    });
+
+    window.addEventListener('i18n:change', (event) => {
+        const locale = event.detail?.locale || I18nService.locale;
+        const phrases = I18N_PACKS[locale]?.['hero.typingPhrases'] || [I18nService.t('hero.prefix')];
+        typingAnimation.updatePhrases(phrases);
     });
 });

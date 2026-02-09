@@ -13,6 +13,7 @@ const state = {
 // DOM 元素
 const grid = document.getElementById('plugin-grid');
 const loader = document.getElementById('loading-spinner');
+const globalLoader = document.getElementById('global-loader');
 const loadMoreBtn = document.getElementById('load-more-btn');
 const statPlugins = document.getElementById('stat-plugins');
 const statDownloads = document.getElementById('stat-downloads');
@@ -22,8 +23,10 @@ const favoritesView = document.getElementById('favorites-view');
 
 // 初始化
 function init() {
-    TagService.setLocale(CONFIG.DEFAULT_LOCALE);
+    I18nService.init();
     renderCategories();
+    I18nService.apply();
+    document.getElementById('result-count').innerText = I18nService.t('results.loading');
     bindEvents();
     applyLayout(state.layout);
     updateFavoriteView();
@@ -36,7 +39,7 @@ function renderCategories() {
     const container = document.getElementById('category-container');
     container.innerHTML = CONFIG.CATEGORIES.map(cat => `
         <button class="cat-pill ${cat.id === 'all' ? 'active' : ''}" data-id="${cat.id}">
-            <i class="fa-solid ${cat.icon}"></i> ${cat.name}
+            <i class="fa-solid ${cat.icon}"></i> ${I18nService.t(cat.nameKey || cat.name)}
         </button>
     `).join('');
 
@@ -88,6 +91,7 @@ function bindEvents() {
     const searchInput = document.getElementById('search-input');
     const searchBtn = document.getElementById('search-btn');
     const clearBtn = document.getElementById('search-clear');
+    const languageToggle = document.getElementById('language-toggle');
 
     const applySearch = () => {
         state.search = searchInput.value.trim();
@@ -131,6 +135,16 @@ function bindEvents() {
         });
         document.documentElement.style.setProperty('--primary-accent', 'var(--modrinth-green)');
         fetchData(true);
+    });
+
+    languageToggle?.addEventListener('click', () => {
+        const nextLocale = I18nService.locale === 'zh-CN' ? 'en' : 'zh-CN';
+        I18nService.setLocale(nextLocale);
+        renderCategories();
+        updateStats();
+        updateFavoriteView();
+        updateFavoriteButtons();
+        refreshResultCount();
     });
 
     // 键盘快捷键 /
@@ -187,58 +201,68 @@ async function fetchData(reset) {
     }
 
     loader.classList.remove('hidden');
-    document.getElementById('result-count').innerText = '正在搜索...';
+    setGlobalLoading(true, I18nService.t('global.loadingList'));
+    document.getElementById('result-count').innerText = I18nService.t('results.loading');
 
-    const results = [];
-    const promises = [];
-    
-    // Modrinth
-    if (state.platform === 'all' || state.platform === 'modrinth') {
-        promises.push(ApiService.fetchModrinth(state.search, state.category, state.sort, state.page * 12));
-    }
-    
-    // Spigot
-    if (state.platform === 'all' || state.platform === 'spigot') {
-        promises.push(ApiService.fetchSpigot(state.search, state.category, state.sort, state.page + 1));
-    }
-
-    // Hangar (新增)
-    if (state.platform === 'all' || state.platform === 'hangar') {
-        promises.push(ApiService.fetchHangar(state.search, state.category, state.sort, state.page * 12));
-    }
-
-    const responses = await Promise.all(promises);
-    
-    responses.forEach(res => {
-        if (res.hits) {
-            res.hits.forEach(item => {
-                const entry = { data: item, platform: res.platform };
-                results.push(entry);
-            });
+    try {
+        const results = [];
+        const promises = [];
+        
+        // Modrinth
+        if (state.platform === 'all' || state.platform === 'modrinth') {
+            promises.push(ApiService.fetchModrinth(state.search, state.category, state.sort, state.page * 12));
         }
-    });
+        
+        // Spigot
+        if (state.platform === 'all' || state.platform === 'spigot') {
+            promises.push(ApiService.fetchSpigot(state.search, state.category, state.sort, state.page + 1));
+        }
 
-    // 统一排序逻辑
-    if (state.sort === 'random') {
-        shuffleResults(results);
-    } else {
-        results.sort((a, b) => sortPlugins(a, b, state.sort));
-    }
+        // Hangar (新增)
+        if (state.platform === 'all' || state.platform === 'hangar') {
+            promises.push(ApiService.fetchHangar(state.search, state.category, state.sort, state.page * 12));
+        }
 
-    // 渲染
-    loader.classList.add('hidden');
-    if (results.length > 0) {
-        results.forEach(item => {
-            grid.appendChild(renderCard(item.data, item.platform));
+        const responses = await Promise.all(promises);
+        
+        responses.forEach(res => {
+            if (res.hits) {
+                res.hits.forEach(item => {
+                    const entry = { data: item, platform: res.platform };
+                    results.push(entry);
+                });
+            }
         });
-        loadMoreBtn.classList.remove('hidden');
-        document.getElementById('result-count').innerText = `展示 ${grid.children.length} 个结果`;
-    } else if (reset) {
-        grid.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-secondary)">未找到相关插件</div>';
-        document.getElementById('result-count').innerText = '0 个结果';
-    }
 
-    state.loading = false;
+        // 统一排序逻辑
+        if (state.sort === 'random') {
+            shuffleResults(results);
+        } else {
+            results.sort((a, b) => sortPlugins(a, b, state.sort));
+        }
+
+        // 渲染
+        loader.classList.add('hidden');
+        setGlobalLoading(false);
+        if (results.length > 0) {
+            results.forEach(item => {
+                grid.appendChild(renderCard(item.data, item.platform));
+            });
+            loadMoreBtn.classList.remove('hidden');
+            refreshResultCount();
+        } else if (reset) {
+            grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:40px; color:var(--text-secondary)">${I18nService.t('results.empty')}</div>`;
+            document.getElementById('result-count').innerText = I18nService.t('results.showing', { count: 0 });
+        }
+    } finally {
+        loader.classList.add('hidden');
+        setGlobalLoading(false);
+        state.loading = false;
+    }
+}
+
+function refreshResultCount() {
+    document.getElementById('result-count').innerText = I18nService.t('results.showing', { count: grid.children.length });
 }
 
 // 模拟统计数据动画
@@ -348,7 +372,7 @@ function updateFavoriteView() {
     favoritesGrid.innerHTML = '';
 
     if (favorites.length === 0) {
-        favoritesGrid.innerHTML = '<div class="empty-state">暂无收藏，点击心形按钮收藏插件。</div>';
+        favoritesGrid.innerHTML = `<div class="empty-state">${I18nService.t('favorites.empty')}</div>`;
         return;
     }
 
@@ -365,6 +389,15 @@ function updateFavoriteButtons() {
         const isFavorite = FavoritesService.isFavorite(id);
         btn.className = `fa-${isFavorite ? 'solid' : 'regular'} fa-heart`;
     });
+}
+
+function setGlobalLoading(isLoading, message) {
+    if (!globalLoader) return;
+    const label = globalLoader.querySelector('span');
+    if (label && message) {
+        label.textContent = message;
+    }
+    globalLoader.classList.toggle('hidden', !isLoading);
 }
 
 // 启动应用

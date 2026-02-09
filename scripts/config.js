@@ -2,20 +2,22 @@ const CONFIG = {
     MODRINTH_API: 'https://api.modrinth.com/v2',
     SPIGET_API: 'https://api.spiget.org/v2',
     HANGAR_API: 'https://hangar.papermc.io/api/v1',
-    DEFAULT_LOCALE: 'zh',
+    DEFAULT_LOCALE: 'zh-CN',
     
     // 类别映射扩展
     CATEGORIES: [
-        { 
-            id: 'all', 
-            name: '全部', 
-            icon: 'fa-border-all', 
-            modrinth: null, 
-            spigot: null, 
-            hangar: null 
+        {
+            id: 'all',
+            nameKey: 'category.all',
+            name: '全部',
+            icon: 'fa-border-all',
+            modrinth: null,
+            spigot: null,
+            hangar: null
         },
         { 
             id: 'admin', 
+            nameKey: 'category.admin',
             name: '管理工具', 
             icon: 'fa-shield-halved', 
             modrinth: 'management', 
@@ -24,6 +26,7 @@ const CONFIG = {
         },
         { 
             id: 'gameplay', 
+            nameKey: 'category.gameplay',
             name: '游戏机制', 
             icon: 'fa-bolt', 
             modrinth: 'game-mechanics',
@@ -32,6 +35,7 @@ const CONFIG = {
         },
         { 
             id: 'world', 
+            nameKey: 'category.world',
             name: '世界生成', 
             icon: 'fa-globe', 
             modrinth: 'worldgen', 
@@ -40,6 +44,7 @@ const CONFIG = {
         },
         { 
             id: 'economy', 
+            nameKey: 'category.economy',
             name: '经济系统', 
             icon: 'fa-coins', 
             modrinth: 'economy', 
@@ -48,6 +53,7 @@ const CONFIG = {
         },
         { 
             id: 'chat', 
+            nameKey: 'category.chat',
             name: '聊天社交', 
             icon: 'fa-comments', 
             modrinth: 'social', 
@@ -56,6 +62,7 @@ const CONFIG = {
         },
         { 
             id: 'utility', 
+            nameKey: 'category.utility',
             name: '实用工具', 
             icon: 'fa-wrench', 
             modrinth: 'utility', 
@@ -64,6 +71,7 @@ const CONFIG = {
         },
         { 
             id: 'protection', 
+            nameKey: 'category.protection',
             name: '保护系统', 
             icon: 'fa-shield', 
             modrinth: 'management', 
@@ -72,6 +80,7 @@ const CONFIG = {
         },
         { 
             id: 'minigames', 
+            nameKey: 'category.devtools',
             name: '库/API', 
             icon: 'fa-code', 
             modrinth: 'library', 
@@ -81,7 +90,7 @@ const CONFIG = {
     ],
 
     TAG_TRANSLATIONS: {
-        zh: {
+        'zh-CN': {
             'management': '管理',
             'game-mechanics': '游戏机制',
             'worldgen': '世界',
@@ -114,6 +123,38 @@ const CONFIG = {
             'optimization': '优化',
             'equipment': '装备',
             'decoration': '装饰'
+        },
+        en: {
+            'management': 'Management',
+            'game-mechanics': 'Game Mechanics',
+            'worldgen': 'Worldgen',
+            'economy': 'Economy',
+            'social': 'Social',
+            'utility': 'Utility',
+            'protection': 'Protection',
+            'library': 'Library',
+            'plugin': 'Plugin',
+            'admin_tools': 'Admin Tools',
+            'chat': 'Chat',
+            'dev_tools': 'Dev Tools',
+            'gameplay': 'Gameplay',
+            'games': 'Games',
+            'role_playing': 'Role Playing',
+            'world_management': 'World Management',
+            'misc': 'Misc',
+            'undefined': 'Uncategorized',
+            'storage': 'Storage',
+            'cursed': 'Cursed',
+            'transportation': 'Transportation',
+            'technology': 'Technology',
+            'adventure': 'Adventure',
+            'magic': 'Magic',
+            'mobs': 'Mobs',
+            'food': 'Food',
+            'minigame': 'Minigame',
+            'optimization': 'Optimization',
+            'equipment': 'Equipment',
+            'decoration': 'Decoration'
         }
     }
 };

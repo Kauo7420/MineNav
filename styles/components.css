@@ -24,6 +24,10 @@
 }
 .badge-modrinth { background: rgba(27, 217, 106, 0.15); color: var(--modrinth-green); }
 .badge-spigot { background: rgba(246, 168, 33, 0.15); color: var(--spigot-orange); }
+.badge-hangar { 
+    background: rgba(0, 115, 230, 0.15); 
+    color: #0073e6; 
+}
 
 /* 卡片 */
 .card {
@@ -99,11 +103,6 @@
     font-family: var(--font-mono);
 }
 
-.badge-hangar { 
-    background: rgba(0, 115, 230, 0.15); 
-    color: #0073e6; 
-}
-
 .icon-button {
     width: 38px;
     height: 38px;
@@ -139,6 +138,64 @@
     background: rgba(0, 0, 0, 0.45);
 }
 
+/* NEW: Special Loader Tags Container */
+.card-loaders {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+    padding: 8px 0;
+    border-top: 1px dashed var(--border-color);
+    border-bottom: 1px dashed var(--border-color);
+}
+
+/* NEW: Loader Tags Styling */
+.loader-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, rgba(27, 217, 106, 0.15), rgba(27, 217, 106, 0.05));
+    color: var(--modrinth-green);
+    border: 1px solid rgba(27, 217, 106, 0.3);
+    transition: all 0.2s;
+}
+
+.loader-tag:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(27, 217, 106, 0.2);
+}
+
+.loader-tag i {
+    font-size: 0.75rem;
+}
+
+/* NEW: Special Datapack Tag */
+.loader-tag-datapack {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+    color: #3b82f6;
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.loader-tag-datapack:hover {
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+/* NEW: Special Folia Support Tag */
+.loader-tag-folia {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.loader-tag-folia:hover {
+    box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+/* Regular Category Tags */
 .card-tags {
     display: flex;
     flex-wrap: wrap;

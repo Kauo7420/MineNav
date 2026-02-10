@@ -46,38 +46,65 @@ async function openModal(item, platform) {
         // Hangar 详情
         const slug = getHangarProjectSlug(item);
         if (slug) {
-            const fullData = await ApiService.getHangarDetail(slug);
-            
-            if (fullData) {
-                details = {
-                    title: fullData.name,
-                    desc: fullData.description || '该项目暂无详细描述',
-                    downloads: fullData.stats?.downloads || item.stats?.downloads || 0,
-                    stars: fullData.stats?.stars || item.stats?.stars || 0,
-                    link: `https://hangar.papermc.io/${slug}`,
-                    categories: [CONFIG.HANGAR_CATEGORIES[fullData.category] || fullData.category].filter(Boolean),
-                    versions: []
-                };
-            } else {
-                // 降级使用列表数据
+            try {
+                const fullData = await ApiService.getHangarDetail(slug);
+                
+                if (fullData) {
+                    // SAFE: Handle category mapping with fallback
+                    const categoryKey = fullData.category || 'UNDEFINED';
+                    const translatedCategory = CONFIG.HANGAR_CATEGORIES?.[categoryKey] || categoryKey;
+                    
+                    details = {
+                        title: fullData.name,
+                        desc: fullData.description || '该项目暂无详细描述',
+                        downloads: fullData.stats?.downloads || item.stats?.downloads || 0,
+                        stars: fullData.stats?.stars || item.stats?.stars || 0,
+                        link: `https://hangar.papermc.io/${slug}`,
+                        categories: [translatedCategory].filter(Boolean),
+                        versions: []
+                    };
+                } else {
+                    // 降级使用列表数据
+                    const categoryKey = item.category || 'UNDEFINED';
+                    const translatedCategory = CONFIG.HANGAR_CATEGORIES?.[categoryKey] || categoryKey;
+                    
+                    details = {
+                        title: item.name || '未知项目',
+                        desc: item.description || '暂无详细描述',
+                        downloads: item.stats?.downloads || 0,
+                        stars: item.stats?.stars || 0,
+                        link: `https://hangar.papermc.io/${slug}`,
+                        categories: [translatedCategory].filter(Boolean),
+                        versions: []
+                    };
+                }
+            } catch (error) {
+                console.warn('Hangar detail fetch failed:', error);
+                // Fallback with list data
+                const categoryKey = item.category || 'UNDEFINED';
+                const translatedCategory = CONFIG.HANGAR_CATEGORIES?.[categoryKey] || categoryKey;
+                
                 details = {
                     title: item.name || '未知项目',
                     desc: item.description || '暂无详细描述',
                     downloads: item.stats?.downloads || 0,
                     stars: item.stats?.stars || 0,
                     link: `https://hangar.papermc.io/${slug}`,
-                    categories: [CONFIG.HANGAR_CATEGORIES[item.category] || item.category].filter(Boolean),
+                    categories: [translatedCategory].filter(Boolean),
                     versions: []
                 };
             }
         } else {
+            const categoryKey = item.category || 'UNDEFINED';
+            const translatedCategory = CONFIG.HANGAR_CATEGORIES?.[categoryKey] || categoryKey;
+            
             details = {
                 title: item.name || '未知项目',
                 desc: item.description || '暂无详细描述',
                 downloads: item.stats?.downloads || 0,
                 stars: item.stats?.stars || 0,
                 link: '#',
-                categories: [CONFIG.HANGAR_CATEGORIES[item.category] || item.category].filter(Boolean),
+                categories: [translatedCategory].filter(Boolean),
                 versions: []
             };
         }

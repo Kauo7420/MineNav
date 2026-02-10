@@ -1,6 +1,6 @@
 // 卡片渲染逻辑
 function renderCard(item, platform) {
-    let title, author, desc, iconUrl, downloads, date, id, link, categories;
+    let title, author, desc, iconUrl, downloads, date, id, link, categories, loaders, tags;
 
     if (platform === 'modrinth') {
         id = item.project_id || item.slug;
@@ -12,6 +12,8 @@ function renderCard(item, platform) {
         date = new Date(item.date_modified).toLocaleDateString('zh-CN');
         link = `https://modrinth.com/plugin/${item.slug}`;
         categories = item.categories || [];
+        loaders = Array.isArray(item.loaders) ? item.loaders : []; // SAFE: Ensure array
+        tags = [];
     } 
     else if (platform === 'hangar') {
         // Hangar 数据映射
@@ -24,17 +26,21 @@ function renderCard(item, platform) {
         date = new Date(item.lastUpdated).toLocaleDateString('zh-CN');
         link = `https://hangar.papermc.io/${item.namespace?.owner}/${item.namespace?.slug}`;
         categories = [item.category].filter(Boolean);
+        loaders = [];
+        tags = Array.isArray(item.tags) ? item.tags : []; // SAFE: Ensure array exists
     }
     else { // spigot
         id = item.id;
         title = item.name;
-        author = 'SpigotUser';
+        author = 'Loading...'; // 将异步加载
         desc = item.tag;
         iconUrl = item.icon.url ? `https://www.spigotmc.org/${item.icon.url}` : `https://www.spigotmc.org/data/resource_icons/${Math.floor(id/1000)}/${id}.jpg`;
         downloads = item.downloads;
         date = new Date(item.updateDate * 1000).toLocaleDateString('zh-CN');
         link = `https://www.spigotmc.org/resources/${id}`;
         categories = [item.category?.name || 'Plugin'];
+        loaders = [];
+        tags = [];
     }
 
     // 图标处理
@@ -52,6 +58,33 @@ function renderCard(item, platform) {
         platformBadge = `<span class="badge badge-spigot"><i class="fa-solid fa-faucet"></i> Spigot</span>`;
     }
 
+    // NEW: 分离 datapack 和普通 loaders (Modrinth only)
+    const hasDatapack = loaders.includes('datapack');
+    const regularLoaders = loaders.filter(l => l !== 'datapack');
+
+    // NEW: 渲染特殊标签（Loaders + Datapack + Folia）
+    let specialTagsHtml = '';
+    
+    // Modrinth: 加载器标签
+    if (platform === 'modrinth' && Array.isArray(regularLoaders) && regularLoaders.length > 0) {
+        regularLoaders.forEach(loader => {
+            const icon = CONFIG.LOADER_ICONS[loader] || 'fa-puzzle-piece';
+            const name = TagService.translate(loader);
+            specialTagsHtml += `<span class="loader-tag" title="${name}"><i class="fa-solid ${icon}"></i> ${name}</span>`;
+        });
+    }
+
+    // Modrinth: Datapack 标签（单独显示）
+    if (platform === 'modrinth' && hasDatapack) {
+        const icon = CONFIG.LOADER_ICONS['datapack'] || 'fa-database';
+        specialTagsHtml += `<span class="loader-tag loader-tag-datapack" title="Datapack"><i class="fa-solid ${icon}"></i> Datapack</span>`;
+    }
+
+    // Hangar: Folia 支持标签 (SAFE: Check array existence and contents)
+    if (platform === 'hangar' && Array.isArray(tags) && tags.includes('SUPPORTS_FOLIA')) {
+        specialTagsHtml += `<span class="loader-tag loader-tag-folia" title="Supports Folia"><i class="fa-solid fa-leaf"></i> Supports Folia</span>`;
+    }
+
     const card = document.createElement('div');
     card.className = 'card';
     card.onclick = () => openModal(item, platform);
@@ -65,10 +98,11 @@ function renderCard(item, platform) {
             ${imgHtml}
             <div class="card-title">
                 <h3>${title}</h3>
-                <div class="card-author"><i class="fa-solid fa-user"></i> ${author}</div>
+                <div class="card-author"><i class="fa-solid fa-user"></i> <span class="author-name">${author}</span></div>
             </div>
         </div>
         <div class="card-desc">${desc || '暂无描述'}</div>
+        ${specialTagsHtml ? `<div class="card-loaders">${specialTagsHtml}</div>` : ''}
         <div class="card-tags">
             ${TagService.translateList(categories).map(tag => `<span class="tag">${tag}</span>`).join('')}
         </div>
@@ -92,6 +126,11 @@ function renderCard(item, platform) {
         favoriteBtn.innerHTML = `<i class="fa-${isFavorite ? 'solid' : 'regular'} fa-heart"></i>`;
     });
 
+    // NEW: 异步加载 Spigot 作者名称
+    if (platform === 'spigot' && item.author?.id) {
+        updateSpigotAuthor(card, item.author.id);
+    }
+
     updateCardMetadata(card, item, platform);
     return card;
 }
@@ -100,6 +139,24 @@ function formatNumber(num) {
     if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
     if (num >= 1000) return (num / 1000).toFixed(1) + 'k';
     return num;
+}
+
+// NEW: 异步更新 Spigot 作者名称
+async function updateSpigotAuthor(card, authorId) {
+    const authorElement = card.querySelector('.author-name');
+    if (!authorElement) return;
+
+    try {
+        const authorName = await ApiService.getSpigotAuthor(authorId);
+        if (authorName) {
+            authorElement.textContent = authorName;
+        } else {
+            authorElement.textContent = 'Unknown Author';
+        }
+    } catch (error) {
+        console.warn('Failed to load Spigot author:', error);
+        authorElement.textContent = 'Unknown Author';
+    }
 }
 
 async function updateCardMetadata(card, item, platform) {

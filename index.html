@@ -43,12 +43,6 @@
             </div>
 
             <div class="nav-actions">
-                <div class="search-wrapper">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                    <input type="text" id="search-input" placeholder="搜索插件... (按 / 键)" aria-label="搜索插件">
-                    <button type="button" id="search-clear" class="search-clear" aria-label="清除搜索">✕</button>
-                    <button type="button" id="search-btn" class="search-btn" aria-label="搜索">搜索</button>
-                </div>
                 <button id="favorites-toggle" class="icon-button" title="查看收藏" aria-label="查看收藏">
                     <i class="fa-solid fa-heart"></i>
                 </button>
@@ -79,6 +73,17 @@
                 <span class="highlight">Minecraft</span> 服务器插件
             </h1>
             <p>聚合 Modrinth、SpigotMC 与 Hangar 的海量资源</p>
+            
+            <!-- NEW: Search bar relocated here -->
+            <div class="hero-search-wrapper">
+                <div class="search-wrapper">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="search-input" placeholder="搜索插件... (按 / 键)" aria-label="搜索插件">
+                    <button type="button" id="search-clear" class="search-clear" aria-label="清除搜索">✕</button>
+                    <button type="button" id="search-btn" class="search-btn" aria-label="搜索">搜索</button>
+                </div>
+            </div>
+
             <div class="stats-container">
                 <div class="stat-item">
                     <span id="stat-plugins" class="stat-number">0</span>

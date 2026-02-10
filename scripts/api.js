@@ -133,6 +133,7 @@ class ApiService {
             return null;
         }
     }
+    
     // 获取详情 (Modrinth)
     static async getModrinthDetail(id) {
         const res = await fetch(`${CONFIG.MODRINTH_API}/project/${id}`);
@@ -194,6 +195,20 @@ class ApiService {
         } catch (e) {
             console.warn('Spigot minecraft versions fetch error:', e);
             return [];
+        }
+    }
+
+    // NEW: 获取 Spigot 作者名称
+    static async getSpigotAuthor(authorId) {
+        if (!authorId) return null;
+        try {
+            const res = await fetch(`${CONFIG.SPIGET_API}/authors/${authorId}`);
+            if (!res.ok) throw new Error('Spigot author API Error');
+            const data = await res.json();
+            return data.name || null;
+        } catch (e) {
+            console.warn('Spigot author fetch error:', e);
+            return null;
         }
     }
 }

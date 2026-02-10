@@ -80,6 +80,38 @@ const CONFIG = {
         },
     ],
 
+    // Hangar 分类映射
+    HANGAR_CATEGORIES: {
+        'ADMIN_TOOLS': '管理工具',
+        'CHAT': '聊天',
+        'DEV_TOOLS': '开发工具',
+        'ECONOMY': '经济',
+        'GAMEPLAY': '游戏机制',
+        'GAMES': '游戏',
+        'PROTECTION': '保护',
+        'ROLE_PLAYING': '角色扮演',
+        'WORLD_MANAGEMENT': '世界生成',
+        'MISC': '其他',
+        'UNDEFINED': '未分类'
+    },
+
+    // NEW: Loader 图标映射
+    LOADER_ICONS: {
+        'bukkit': 'fa-bucket',
+        'bungeecord': 'fa-network-wired',
+        'fabric': 'fa-shirt',
+        'folia': 'fa-leaf',
+        'forge': 'fa-hammer',
+        'neoforge': 'fa-fire',
+        'paper': 'fa-file-lines',
+        'purpur': 'fa-seedling',
+        'quilt': 'fa-layer-group',
+        'spigot': 'fa-faucet',
+        'velocity': 'fa-bolt-lightning',
+        'waterfall': 'fa-water',
+        'datapack': 'fa-database'
+    },
+
     TAG_TRANSLATIONS: {
         zh: {
             'management': '管理',
@@ -113,7 +145,20 @@ const CONFIG = {
             'minigame': '小游戏',
             'optimization': '优化',
             'equipment': '装备',
-            'decoration': '装饰'
+            'decoration': '装饰',
+            'bukkit': 'Bukkit',
+            'bungeecord': 'BungeeCord',
+            'fabric': 'Fabric',
+            'folia': 'Folia',
+            'forge': 'Forge',
+            'neoforge': 'NeoForge',
+            'paper': 'Paper',
+            'purpur': 'Purpur',
+            'quilt': 'Quilt',
+            'spigot': 'Spigot',
+            'velocity': 'Velocity',
+            'waterfall': 'Waterfall',
+            'datapack': '数据包'
         }
     }
 };

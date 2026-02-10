@@ -34,6 +34,7 @@
     grid-template-columns: 220px 1fr;
     grid-template-areas:
         "header desc"
+        "header loaders"
         "header tags"
         "header extra"
         "header meta";
@@ -42,6 +43,7 @@
 
 .plugin-grid[data-layout="list"] .card-header { grid-area: header; margin-bottom: 0; }
 .plugin-grid[data-layout="list"] .card-desc { grid-area: desc; margin-bottom: 0; }
+.plugin-grid[data-layout="list"] .card-loaders { grid-area: loaders; margin-bottom: 0; }
 .plugin-grid[data-layout="list"] .card-tags { grid-area: tags; margin-bottom: 0; }
 .plugin-grid[data-layout="list"] .card-extra { grid-area: extra; margin-bottom: 0; }
 .plugin-grid[data-layout="list"] .card-meta { grid-area: meta; justify-content: flex-start; }
@@ -56,6 +58,7 @@
         grid-template-areas:
             "header"
             "desc"
+            "loaders"
             "tags"
             "extra"
             "meta";

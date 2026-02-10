@@ -97,6 +97,30 @@ const PlatformTagService = {
         return tags
             .map(tag => this.HANGAR_SPECIAL_TAGS[tag])
             .filter(Boolean);
+    },
+    // NEW: 从 supportedPlatforms 中提取 Hangar 加载器的兼容性
+    getHangarLoaderCompatibility(detail) {
+        const loaders = [];
+        const supportedPlatforms = detail?.supportedPlatforms;
+        
+        if (!supportedPlatforms || typeof supportedPlatforms !== 'object') {
+            return loaders;
+        }
+
+        // Map Hangar platform keys to loader names
+        const platformMap = {
+            'PAPER': 'paper',
+            'VELOCITY': 'velocity',
+            'WATERFALL': 'waterfall'
+        };
+
+        Object.keys(supportedPlatforms).forEach(platform => {
+            if (platformMap[platform] && Array.isArray(supportedPlatforms[platform]) && supportedPlatforms[platform].length > 0) {
+                loaders.push(platformMap[platform]);
+            }
+        });
+
+        return loaders;
     }
 };
 
@@ -197,7 +221,8 @@ const MetadataService = {
             supportedVersions: [],
             latestVersion: '未知',
             links: {},
-            hangarPlatformVersions: []
+            hangarPlatformVersions: [],
+            loaderCompatibility: []
         };
 
         let metadata = fallback;
@@ -217,9 +242,11 @@ const MetadataService = {
                     links: {
                         github: detail?.source_url,
                         discord: detail?.discord_url,
-                        wiki: detail?.wiki_url
+                        wiki: detail?.wiki_url,
+                        issues: detail?.issues_url  // NEW: Add issues link
                     },
-                    hangarPlatformVersions: []
+                    hangarPlatformVersions: [],
+                    loaderCompatibility: detail?.loaders || item?.loaders || []
                 };
             } else if (platform === 'hangar') {
                 const slug = getHangarProjectSlug(item);
@@ -233,14 +260,16 @@ const MetadataService = {
 
                 const versionItems = versions?.result || [];
                 const latestEntry = getLatestByDate(versionItems, 'createdAt') || {};
-                const supportedVersions = extractHangarMinecraftVersionsFromDetail(detail);
+                // FIXED: Only use PAPER platform for card version display
+                const supportedVersions = extractHangarMinecraftVersionsFromDetail(detail, 'PAPER');
                 const parsedLinks = LinkService.parseHangarLinks(detail);
 
                 metadata = {
                     supportedVersions: supportedVersions,
                     latestVersion: latestEntry.version || latestEntry.name || latestEntry.versionString || '未知',
                     links: parsedLinks,
-                    hangarPlatformVersions: getHangarVersionDisplayEntries(detail)
+                    hangarPlatformVersions: getHangarVersionDisplayEntries(detail),
+                    loaderCompatibility: PlatformTagService.getHangarLoaderCompatibility(detail)  // NEW: Add loader compatibility
                 };
             } else {
                 const [detail, versions, minecraftVersions] = await Promise.all([
@@ -259,7 +288,8 @@ const MetadataService = {
                         discord: detail?.links?.discord || detail?.discordUrl,
                         wiki: detail?.documentation || detail?.wikiUrl
                     },
-                    hangarPlatformVersions: []
+                    hangarPlatformVersions: [],
+                    loaderCompatibility: []
                 };
             }
         } catch (error) {
@@ -322,9 +352,17 @@ function getHangarVersionDisplayEntries(detail) {
     }));
 }
 
-function extractHangarMinecraftVersionsFromDetail(detail) {
+// FIXED: Add platformFilter parameter to support PAPER-only filtering for cards
+function extractHangarMinecraftVersionsFromDetail(detail, platformFilter = null) {
     try {
         const versionMap = extractHangarPlatformVersionMap(detail);
+        
+        // If platformFilter is specified (e.g., 'PAPER'), return only that platform's versions
+        if (platformFilter && versionMap[platformFilter]) {
+            return versionMap[platformFilter];
+        }
+        
+        // For detail view, return all platforms
         return Object.values(versionMap).flat();
     } catch (e) {
         console.warn('Invalid Hangar supportedPlatforms structure:', e);
@@ -398,12 +436,10 @@ function escapeHtml(text) {
     return `${text}`.replace(/[&<>"']/g, match => map[match]);
 }
 
+// FIXED: Remove markdown rendering, display as plain text
 function renderMarkdownContent(markdown) {
     if (!markdown) return '';
-    if (window.marked && window.DOMPurify) {
-        const html = window.marked.parse(markdown, { breaks: true, gfm: true });
-        return window.DOMPurify.sanitize(html, { USE_PROFILES: { html: true } });
-    }
+    // Simply escape HTML and preserve line breaks
     return escapeHtml(markdown).replace(/\n/g, '<br>');
 }
 

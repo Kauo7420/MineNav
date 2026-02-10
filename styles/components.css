@@ -176,6 +176,26 @@
     font-size: 0.75rem;
 }
 
+/* NEW: Loader Badge (smaller, icon-only style for metadata section) */
+.loader-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    background: linear-gradient(135deg, rgba(27, 217, 106, 0.15), rgba(27, 217, 106, 0.05));
+    color: var(--modrinth-green);
+    border: 1px solid rgba(27, 217, 106, 0.3);
+    font-size: 0.7rem;
+    transition: all 0.2s;
+}
+
+.loader-badge:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(27, 217, 106, 0.25);
+}
+
 /* NEW: Special Datapack Tag */
 .loader-tag-datapack,
 .special-tag-datapack {

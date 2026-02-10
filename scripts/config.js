@@ -103,7 +103,7 @@ const CONFIG = {
         'folia': 'fa-leaf',
         'forge': 'fa-hammer',
         'neoforge': 'fa-fire',
-        'paper': 'fa-file-lines',
+        'paper': 'fa-paper-plane',
         'purpur': 'fa-seedling',
         'quilt': 'fa-layer-group',
         'spigot': 'fa-faucet',

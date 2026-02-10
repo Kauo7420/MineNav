@@ -60,7 +60,8 @@ function renderExternalLinks(links = {}) {
     const fallbackMappings = [
         { key: 'github', label: '查看源码', icon: 'fa-brands fa-github' },
         { key: 'discord', label: '加入 Discord 服务器', icon: 'fa-brands fa-discord' },
-        { key: 'wiki', label: '前往 Wiki', icon: 'fa-solid fa-book' }
+        { key: 'wiki', label: '前往 Wiki', icon: 'fa-solid fa-book' },
+        { key: 'issues', label: '报告问题', icon: 'fa-solid fa-bug' }  // NEW: 添加issues链接
     ];
 
     let renderableLinks = LinkService.toRenderableLinks(links);
@@ -99,9 +100,10 @@ async function openModal(item, platform) {
     if (platform === 'modrinth') {
         try {
             const fullData = await ApiService.getModrinthDetail(item.project_id || item.id || item.slug);
+            // FIXED: 使用'description'字段代替'body'字段，并以纯文本形式呈现。
             details = {
                 title: fullData.title,
-                desc: renderMarkdownContent(fullData.body),
+                desc: fullData.description || '暂无详细描述',  // FIXED: 使用描述字段，纯文本
                 downloads: fullData.downloads,
                 link: `https://modrinth.com/plugin/${fullData.slug}`,
                 categories: fullData.categories,
@@ -111,7 +113,7 @@ async function openModal(item, platform) {
         } catch (error) {
             details = {
                 title: item.title,
-                desc: renderMarkdownContent(item.description || '暂无详细描述'),
+                desc: item.description || '暂无详细描述',  // FIXED: 使用描述字段，纯文本
                 downloads: item.downloads || 0,
                 link: `https://modrinth.com/plugin/${item.slug}`,
                 categories: item.categories || [],
@@ -194,7 +196,7 @@ async function openModal(item, platform) {
     else { // spigot
         details = {
             title: item.name,
-            desc: item.tag + "<br><br>更多详情请点击下方链接前往 SpigotMC 查看。",
+            desc: item.tag,
             downloads: item.downloads,
             link: `https://www.spigotmc.org/resources/${item.id}`,
             categories: [item.category?.name || 'Plugin'],
@@ -238,6 +240,9 @@ async function openModal(item, platform) {
         ? `<div class="detail-section"><h3>标签</h3><div class="detail-chip-list">${normalTags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div></div>`
         : '';
 
+    // FIXED: Description is now plain text (renderMarkdownContent now just escapes HTML)
+    const descriptionHtml = escapeHtml(details.desc).replace(/\n/g, '<br>');
+
     modalContent.innerHTML = `
         <h2>${details.title}</h2>
         <p style="color:var(--text-secondary); margin-bottom: 20px;">
@@ -250,7 +255,7 @@ async function openModal(item, platform) {
         ${normalTagHtml}
         ${renderExternalLinks(links)}
         <div style="background:var(--bg-input); padding:15px; border-radius:8px; margin-bottom:20px; max-height:300px; overflow-y:auto; line-height:1.6;">
-            ${details.desc}
+            ${descriptionHtml}
         </div>
         <a href="${details.link}" target="_blank" class="btn btn-primary" style="text-align:center; display:block; background: var(--primary-accent); color: white; border:none;">
             前往下载 <i class="fa-solid fa-arrow-up-right-from-square"></i>

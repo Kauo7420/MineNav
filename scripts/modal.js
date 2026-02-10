@@ -58,9 +58,9 @@ function renderVersionMeta(platform, metadata) {
 
 function renderExternalLinks(links = {}) {
     const fallbackMappings = [
-        { key: 'github', label: 'GitHub', icon: 'fa-brands fa-github' },
-        { key: 'discord', label: 'Discord', icon: 'fa-brands fa-discord' },
-        { key: 'wiki', label: 'Wiki', icon: 'fa-solid fa-book' }
+        { key: 'github', label: '查看源码', icon: 'fa-brands fa-github' },
+        { key: 'discord', label: '加入 Discord 服务器', icon: 'fa-brands fa-discord' },
+        { key: 'wiki', label: '前往 Wiki', icon: 'fa-solid fa-book' }
     ];
 
     let renderableLinks = LinkService.toRenderableLinks(links);
@@ -245,7 +245,7 @@ async function openModal(item, platform) {
         </p>
         ${renderVersionMeta(platform, metadata)}
         ${platform === 'hangar' ? renderSpecialTagSection('特殊标签', hangarSpecialTags) : ''}
-        ${platform === 'modrinth' ? renderSpecialTagSection('加载器兼容性', loaderCompatibilityTags) : ''}
+        ${platform === 'modrinth' ? renderSpecialTagSection('支持的加载器', loaderCompatibilityTags) : ''}
         ${platform === 'modrinth' ? renderSpecialTagSection('数据包指示器', datapackTags) : ''}
         ${normalTagHtml}
         ${renderExternalLinks(links)}

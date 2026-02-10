@@ -150,7 +150,8 @@
 }
 
 /* NEW: Loader Tags Styling */
-.loader-tag {
+.loader-tag,
+.special-tag {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -164,35 +165,98 @@
     transition: all 0.2s;
 }
 
-.loader-tag:hover {
+.loader-tag:hover,
+.special-tag:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(27, 217, 106, 0.2);
 }
 
-.loader-tag i {
+.loader-tag i,
+.special-tag i {
     font-size: 0.75rem;
 }
 
 /* NEW: Special Datapack Tag */
-.loader-tag-datapack {
+.loader-tag-datapack,
+.special-tag-datapack {
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
     color: #3b82f6;
     border-color: rgba(59, 130, 246, 0.3);
 }
 
-.loader-tag-datapack:hover {
+.loader-tag-datapack:hover,
+.special-tag-datapack:hover {
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
 /* NEW: Special Folia Support Tag */
-.loader-tag-folia {
+.loader-tag-folia,
+.special-tag-folia {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
     color: #22c55e;
     border-color: rgba(34, 197, 94, 0.3);
 }
 
-.loader-tag-folia:hover {
+.loader-tag-folia:hover,
+.special-tag-folia:hover {
     box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+
+.special-tag-addon {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));
+    color: #f59e0b;
+    border-color: rgba(245, 158, 11, 0.35);
+}
+
+.special-tag-library {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.16), rgba(139, 92, 246, 0.05));
+    color: #8b5cf6;
+    border-color: rgba(139, 92, 246, 0.35);
+}
+
+.detail-section {
+    margin-bottom: 14px;
+}
+
+.detail-section h3 {
+    margin: 0 0 8px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.detail-chip-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.detail-version-platform {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 10px;
+}
+
+.detail-version-label {
+    display: inline-flex;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    background: var(--bg-input);
+    color: var(--text-secondary);
+}
+
+.detail-version-value {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.detail-meta-platforms {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 /* Regular Category Tags */

@@ -12,6 +12,82 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
+
+function renderSpecialTagSection(title, tags = []) {
+    if (!Array.isArray(tags) || tags.length === 0) return '';
+    return `
+        <div class="detail-section">
+            <h3>${title}</h3>
+            <div class="detail-chip-list">
+                ${tags.map(tag => `<span class="${tag.className}"><i class="fa-solid ${tag.icon}"></i> ${tag.label}</span>`).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function renderVersionMeta(platform, metadata) {
+    if (platform === 'hangar') {
+        const platformVersions = Array.isArray(metadata?.hangarPlatformVersions)
+            ? metadata.hangarPlatformVersions
+            : [];
+
+        if (platformVersions.length > 0) {
+            const platformBlocks = platformVersions.map(entry => `
+                <div class="detail-version-platform">
+                    <span class="detail-version-label">${entry.platform}</span>
+                    <span class="detail-version-value">${entry.formatted}</span>
+                </div>
+            `).join('');
+
+            return `
+                <div class="detail-meta">
+                    <div class="detail-meta-platforms">${platformBlocks}</div>
+                    <div><i class="fa-solid fa-code-branch"></i> 最新版本：${metadata.latestVersion || '未知'}</div>
+                </div>
+            `;
+        }
+    }
+
+    return `
+        <div class="detail-meta">
+            <div><i class="fa-solid fa-gamepad"></i> 支持版本：${formatVersionList(metadata.supportedVersions, '未知')}</div>
+            <div><i class="fa-solid fa-code-branch"></i> 最新版本：${metadata.latestVersion || '未知'}</div>
+        </div>
+    `;
+}
+
+function renderExternalLinks(links = {}) {
+    const fallbackMappings = [
+        { key: 'github', label: 'GitHub', icon: 'fa-brands fa-github' },
+        { key: 'discord', label: 'Discord', icon: 'fa-brands fa-discord' },
+        { key: 'wiki', label: 'Wiki', icon: 'fa-solid fa-book' }
+    ];
+
+    let renderableLinks = LinkService.toRenderableLinks(links);
+
+    if (renderableLinks.length === 0) {
+        renderableLinks = fallbackMappings
+            .map(mapping => {
+                const url = links?.[mapping.key];
+                if (!url) return null;
+                return { ...mapping, url };
+            })
+            .filter(Boolean);
+    }
+
+    if (renderableLinks.length === 0) return '';
+
+    return `
+        <div class="detail-links">
+            ${renderableLinks.map(link => `
+                <a href="${link.url}" target="_blank" rel="noopener noreferrer">
+                    <i class="${link.icon}"></i> ${link.label}
+                </a>
+            `).join('')}
+        </div>
+    `;
+}
+
 async function openModal(item, platform) {
     modalOverlay.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
@@ -29,7 +105,8 @@ async function openModal(item, platform) {
                 downloads: fullData.downloads,
                 link: `https://modrinth.com/plugin/${fullData.slug}`,
                 categories: fullData.categories,
-                versions: fullData.game_versions
+                versions: fullData.game_versions,
+                loaders: fullData.loaders || item.loaders || []
             };
         } catch (error) {
             details = {
@@ -38,7 +115,8 @@ async function openModal(item, platform) {
                 downloads: item.downloads || 0,
                 link: `https://modrinth.com/plugin/${item.slug}`,
                 categories: item.categories || [],
-                versions: item.versions || []
+                versions: item.versions || [],
+                loaders: item.loaders || []
             };
         }
     } 
@@ -61,7 +139,8 @@ async function openModal(item, platform) {
                         stars: fullData.stats?.stars || item.stats?.stars || 0,
                         link: `https://hangar.papermc.io/${slug}`,
                         categories: [translatedCategory].filter(Boolean),
-                        versions: []
+                        versions: [],
+                        tags: Array.isArray(fullData.tags) ? fullData.tags : (Array.isArray(item.tags) ? item.tags : [])
                     };
                 } else {
                     // 降级使用列表数据
@@ -75,7 +154,8 @@ async function openModal(item, platform) {
                         stars: item.stats?.stars || 0,
                         link: `https://hangar.papermc.io/${slug}`,
                         categories: [translatedCategory].filter(Boolean),
-                        versions: []
+                        versions: [],
+                        tags: Array.isArray(item.tags) ? item.tags : []
                     };
                 }
             } catch (error) {
@@ -91,7 +171,8 @@ async function openModal(item, platform) {
                     stars: item.stats?.stars || 0,
                     link: `https://hangar.papermc.io/${slug}`,
                     categories: [translatedCategory].filter(Boolean),
-                    versions: []
+                    versions: [],
+                    tags: Array.isArray(item.tags) ? item.tags : []
                 };
             }
         } else {
@@ -105,7 +186,8 @@ async function openModal(item, platform) {
                 stars: item.stats?.stars || 0,
                 link: '#',
                 categories: [translatedCategory].filter(Boolean),
-                versions: []
+                versions: [],
+                tags: Array.isArray(item.tags) ? item.tags : []
             };
         }
     }
@@ -128,32 +210,45 @@ async function openModal(item, platform) {
         statsHtml += ` &nbsp;|&nbsp; <i class="fa-solid fa-star"></i> ${formatNumber(details.stars)} 星标`;
     }
 
-    const categories = TagService.translateList(details.categories || []);
+    const modrinthTagGroups = platform === 'modrinth'
+        ? PlatformTagService.classifyModrinthTags(details.categories || [], details.loaders || item.loaders || [])
+        : { loaderCompatibility: [], datapackIndicator: [], normalTags: details.categories || [] };
+    const hangarSpecialTags = platform === 'hangar'
+        ? PlatformTagService.getHangarSpecialTags(details.tags || item.tags || [])
+        : [];
+
+    const normalTags = platform === 'modrinth'
+        ? TagService.translateList(modrinthTagGroups.normalTags)
+        : TagService.translateList(details.categories || []);
+
+    const loaderCompatibilityTags = modrinthTagGroups.loaderCompatibility.map(loader => ({
+        className: 'special-tag',
+        icon: CONFIG.LOADER_ICONS[loader] || 'fa-puzzle-piece',
+        label: TagService.translate(loader)
+    }));
+
+    const datapackTags = modrinthTagGroups.datapackIndicator.map(() => ({
+        className: 'special-tag special-tag-datapack',
+        icon: CONFIG.LOADER_ICONS.datapack || 'fa-database',
+        label: 'Datapack'
+    }));
+
     const links = metadata.links || {};
+    const normalTagHtml = normalTags.length > 0
+        ? `<div class="detail-section"><h3>Tags</h3><div class="detail-chip-list">${normalTags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div></div>`
+        : '';
 
     modalContent.innerHTML = `
         <h2>${details.title}</h2>
-        <div style="margin: 10px 0; display: flex; gap: 10px; flex-wrap: wrap;">
-            ${categories.map(c => `<span class="badge" style="background:var(--bg-input)">${c}</span>`).join('')}
-        </div>
         <p style="color:var(--text-secondary); margin-bottom: 20px;">
             ${statsHtml}
         </p>
-        <div class="detail-meta">
-            <div><i class="fa-solid fa-gamepad"></i> 支持版本：${formatVersionList(metadata.supportedVersions, '未知')}</div>
-            <div><i class="fa-solid fa-code-branch"></i> 最新版本：${metadata.latestVersion || '未知'}</div>
-        </div>
-        <div class="detail-links">
-            <a href="${links.github || '#'}" target="_blank" class="${links.github ? '' : 'disabled'}">
-                <i class="fa-brands fa-github"></i> GitHub
-            </a>
-            <a href="${links.discord || '#'}" target="_blank" class="${links.discord ? '' : 'disabled'}">
-                <i class="fa-brands fa-discord"></i> Discord
-            </a>
-            <a href="${links.wiki || '#'}" target="_blank" class="${links.wiki ? '' : 'disabled'}">
-                <i class="fa-solid fa-book"></i> 文档 / Wiki
-            </a>
-        </div>
+        ${renderVersionMeta(platform, metadata)}
+        ${platform === 'hangar' ? renderSpecialTagSection('Special Tags', hangarSpecialTags) : ''}
+        ${platform === 'modrinth' ? renderSpecialTagSection('Loader Compatibility', loaderCompatibilityTags) : ''}
+        ${platform === 'modrinth' ? renderSpecialTagSection('Datapack Indicator', datapackTags) : ''}
+        ${normalTagHtml}
+        ${renderExternalLinks(links)}
         <div style="background:var(--bg-input); padding:15px; border-radius:8px; margin-bottom:20px; max-height:300px; overflow-y:auto; line-height:1.6;">
             ${details.desc}
         </div>

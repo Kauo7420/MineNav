@@ -58,16 +58,19 @@ function renderCard(item, platform) {
         platformBadge = `<span class="badge badge-spigot"><i class="fa-solid fa-faucet"></i> Spigot</span>`;
     }
 
-    // NEW: 分离 datapack 和普通 loaders (Modrinth only)
-    const hasDatapack = loaders.includes('datapack');
-    const regularLoaders = loaders.filter(l => l !== 'datapack');
+    const modrinthTagGroups = platform === 'modrinth'
+        ? PlatformTagService.classifyModrinthTags(categories, loaders)
+        : { loaderCompatibility: [], datapackIndicator: [], normalTags: categories };
+    const hangarSpecialTags = platform === 'hangar'
+        ? PlatformTagService.getHangarSpecialTags(tags)
+        : [];
 
-    // NEW: 渲染特殊标签（Loaders + Datapack + Folia）
+    // 渲染特殊标签（Loaders + Datapack + Hangar Special Tags）
     let specialTagsHtml = '';
     
     // Modrinth: 加载器标签
-    if (platform === 'modrinth' && Array.isArray(regularLoaders) && regularLoaders.length > 0) {
-        regularLoaders.forEach(loader => {
+    if (platform === 'modrinth' && modrinthTagGroups.loaderCompatibility.length > 0) {
+        modrinthTagGroups.loaderCompatibility.forEach(loader => {
             const icon = CONFIG.LOADER_ICONS[loader] || 'fa-puzzle-piece';
             const name = TagService.translate(loader);
             specialTagsHtml += `<span class="loader-tag" title="${name}"><i class="fa-solid ${icon}"></i> ${name}</span>`;
@@ -75,15 +78,23 @@ function renderCard(item, platform) {
     }
 
     // Modrinth: Datapack 标签（单独显示）
-    if (platform === 'modrinth' && hasDatapack) {
+    if (platform === 'modrinth' && modrinthTagGroups.datapackIndicator.length > 0) {
         const icon = CONFIG.LOADER_ICONS['datapack'] || 'fa-database';
         specialTagsHtml += `<span class="loader-tag loader-tag-datapack" title="Datapack"><i class="fa-solid ${icon}"></i> Datapack</span>`;
     }
 
-    // Hangar: Folia 支持标签 (SAFE: Check array existence and contents)
-    if (platform === 'hangar' && Array.isArray(tags) && tags.includes('SUPPORTS_FOLIA')) {
-        specialTagsHtml += `<span class="loader-tag loader-tag-folia" title="Supports Folia"><i class="fa-solid fa-leaf"></i> Supports Folia</span>`;
+    // Hangar: Special Tags
+    if (platform === 'hangar' && hangarSpecialTags.length > 0) {
+        hangarSpecialTags.forEach(tag => {
+            specialTagsHtml += `<span class="${tag.className}" title="${tag.label}"><i class="fa-solid ${tag.icon}"></i> ${tag.label}</span>`;
+        });
     }
+
+    const displayCategories = platform === 'modrinth' ? modrinthTagGroups.normalTags : categories;
+    const translatedCategories = TagService.translateList(displayCategories);
+    const categoryTagsHtml = translatedCategories.length > 0
+        ? `<div class="card-tags">${translatedCategories.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>`
+        : '';
 
     const card = document.createElement('div');
     card.className = 'card';
@@ -103,9 +114,7 @@ function renderCard(item, platform) {
         </div>
         <div class="card-desc">${desc || '暂无描述'}</div>
         ${specialTagsHtml ? `<div class="card-loaders">${specialTagsHtml}</div>` : ''}
-        <div class="card-tags">
-            ${TagService.translateList(categories).map(tag => `<span class="tag">${tag}</span>`).join('')}
-        </div>
+        ${categoryTagsHtml}
         <div class="card-extra">
             <span title="支持版本"><i class="fa-solid fa-gamepad"></i> <span class="metadata-versions">加载中...</span></span>
             <span title="最新版本"><i class="fa-solid fa-code-branch"></i> <span class="metadata-latest">加载中...</span></span>

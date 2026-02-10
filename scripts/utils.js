@@ -32,6 +32,115 @@ const TagService = {
     }
 };
 
+const PlatformTagService = {
+    MODRINTH_SPECIAL_LOADERS: new Set([
+        'bukkit', 'bungeecord', 'fabric', 'folia', 'forge',
+        'neoforge', 'paper', 'purpur', 'quilt', 'spigot',
+        'velocity', 'waterfall'
+    ]),
+    MODRINTH_DATAPACK: 'datapack',
+    HANGAR_SPECIAL_TAGS: {
+        SUPPORTS_FOLIA: {
+            key: 'folia',
+            label: 'Supports Folia',
+            icon: 'fa-leaf',
+            className: 'special-tag special-tag-folia'
+        },
+        ADDON: {
+            key: 'addon',
+            label: 'Addon',
+            icon: 'fa-puzzle-piece',
+            className: 'special-tag special-tag-addon'
+        },
+        LIBRARY: {
+            key: 'library',
+            label: 'Library',
+            icon: 'fa-book-open',
+            className: 'special-tag special-tag-library'
+        }
+    },
+    classifyModrinthTags(categories = [], loaders = []) {
+        const normalizedLoaders = Array.isArray(loaders)
+            ? loaders.map(loader => `${loader}`.toLowerCase().trim()).filter(Boolean)
+            : [];
+        const normalizedCategories = Array.isArray(categories)
+            ? categories.map(category => `${category}`.toLowerCase().trim()).filter(Boolean)
+            : [];
+
+        const loaderCompatibility = [];
+        const datapackIndicator = [];
+        const consumed = new Set();
+
+        normalizedLoaders.forEach(loader => {
+            if (loader === this.MODRINTH_DATAPACK) {
+                datapackIndicator.push(loader);
+                consumed.add(loader);
+                return;
+            }
+
+            if (this.MODRINTH_SPECIAL_LOADERS.has(loader)) {
+                loaderCompatibility.push(loader);
+                consumed.add(loader);
+            }
+        });
+
+        const normalTags = normalizedCategories.filter(tag => !consumed.has(tag));
+
+        return {
+            loaderCompatibility: Array.from(new Set(loaderCompatibility)),
+            datapackIndicator: Array.from(new Set(datapackIndicator)),
+            normalTags: Array.from(new Set(normalTags))
+        };
+    },
+    getHangarSpecialTags(tags = []) {
+        if (!Array.isArray(tags) || tags.length === 0) return [];
+        return tags
+            .map(tag => this.HANGAR_SPECIAL_TAGS[tag])
+            .filter(Boolean);
+    }
+};
+
+const LinkService = {
+    HANGAR_LINK_MAPPINGS: {
+        support: { key: 'discord', label: 'Discord', icon: 'fa-brands fa-discord' },
+        wiki: { key: 'wiki', label: 'Wiki', icon: 'fa-solid fa-book' },
+        source: { key: 'source', label: 'Source', icon: 'fa-brands fa-github' },
+        issues: { key: 'issues', label: 'Issues', icon: 'fa-solid fa-bug' },
+        donate: { key: 'donate', label: 'Donate', icon: 'fa-solid fa-heart' }
+    },
+    parseHangarLinks(detail) {
+        const mappedLinks = {};
+        const linkGroups = detail?.settings?.links;
+        if (!Array.isArray(linkGroups) || linkGroups.length === 0) {
+            return mappedLinks;
+        }
+
+        linkGroups.forEach(group => {
+            const groupLinks = group?.links;
+            if (!Array.isArray(groupLinks)) return;
+
+            groupLinks.forEach(linkItem => {
+                const name = `${linkItem?.name || ''}`.trim().toLowerCase();
+                const url = `${linkItem?.url || ''}`.trim();
+                const mapping = this.HANGAR_LINK_MAPPINGS[name];
+                if (!mapping || !url || mappedLinks[mapping.key]) return;
+
+                mappedLinks[mapping.key] = {
+                    key: mapping.key,
+                    label: mapping.label,
+                    icon: mapping.icon,
+                    url
+                };
+            });
+        });
+
+        return mappedLinks;
+    },
+    toRenderableLinks(links = {}) {
+        return Object.values(links).filter(link => link?.url);
+    }
+};
+
 const FavoritesService = {
     key: 'plugin-favorites',
     listeners: new Set(),
@@ -87,7 +196,8 @@ const MetadataService = {
         const fallback = {
             supportedVersions: [],
             latestVersion: '未知',
-            links: {}
+            links: {},
+            hangarPlatformVersions: []
         };
 
         let metadata = fallback;
@@ -108,7 +218,8 @@ const MetadataService = {
                         github: detail?.source_url,
                         discord: detail?.discord_url,
                         wiki: detail?.wiki_url
-                    }
+                    },
+                    hangarPlatformVersions: []
                 };
             } else if (platform === 'hangar') {
                 const slug = getHangarProjectSlug(item);
@@ -123,15 +234,13 @@ const MetadataService = {
                 const versionItems = versions?.result || [];
                 const latestEntry = getLatestByDate(versionItems, 'createdAt') || {};
                 const supportedVersions = extractHangarMinecraftVersionsFromDetail(detail);
+                const parsedLinks = LinkService.parseHangarLinks(detail);
 
                 metadata = {
                     supportedVersions: supportedVersions,
                     latestVersion: latestEntry.version || latestEntry.name || latestEntry.versionString || '未知',
-                    links: {
-                        github: detail?.links?.github || detail?.links?.source || detail?.settings?.source,
-                        discord: detail?.links?.discord,
-                        wiki: detail?.links?.homepage || detail?.links?.documentation
-                    }
+                    links: parsedLinks,
+                    hangarPlatformVersions: getHangarVersionDisplayEntries(detail)
                 };
             } else {
                 const [detail, versions, minecraftVersions] = await Promise.all([
@@ -149,7 +258,8 @@ const MetadataService = {
                         github: detail?.links?.github || detail?.sourceCodeLink || detail?.githubUrl,
                         discord: detail?.links?.discord || detail?.discordUrl,
                         wiki: detail?.documentation || detail?.wikiUrl
-                    }
+                    },
+                    hangarPlatformVersions: []
                 };
             }
         } catch (error) {
@@ -184,13 +294,38 @@ function collectModrinthVersions(detail, versionItems, item) {
     return Array.from(versions);
 }
 
+
+function extractHangarPlatformVersionMap(detail) {
+    const targets = ['PAPER', 'VELOCITY', 'WATERFALL'];
+    const versionMap = {};
+    const supportedPlatforms = detail?.supportedPlatforms;
+
+    if (!supportedPlatforms || typeof supportedPlatforms !== 'object') {
+        return versionMap;
+    }
+
+    targets.forEach(target => {
+        const platformVersions = supportedPlatforms[target];
+        if (!Array.isArray(platformVersions) || platformVersions.length === 0) return;
+        versionMap[target] = Array.from(new Set(platformVersions.filter(Boolean)));
+    });
+
+    return versionMap;
+}
+
+function getHangarVersionDisplayEntries(detail) {
+    const versionMap = extractHangarPlatformVersionMap(detail);
+    return Object.entries(versionMap).map(([platform, versions]) => ({
+        platform,
+        versions,
+        formatted: formatVersionList(versions, '未知')
+    }));
+}
+
 function extractHangarMinecraftVersionsFromDetail(detail) {
     try {
-        const paperVersions = detail?.supportedPlatforms?.PAPER;
-        if (!Array.isArray(paperVersions) || paperVersions.length === 0) {
-            return [];
-        }
-        return paperVersions.filter(Boolean);
+        const versionMap = extractHangarPlatformVersionMap(detail);
+        return Object.values(versionMap).flat();
     } catch (e) {
         console.warn('Invalid Hangar supportedPlatforms structure:', e);
         return [];

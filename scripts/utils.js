@@ -104,9 +104,9 @@ const LinkService = {
     HANGAR_LINK_MAPPINGS: {
         support: { key: 'discord', label: 'Discord', icon: 'fa-brands fa-discord' },
         wiki: { key: 'wiki', label: 'Wiki', icon: 'fa-solid fa-book' },
-        source: { key: 'source', label: 'Source', icon: 'fa-brands fa-github' },
-        issues: { key: 'issues', label: 'Issues', icon: 'fa-solid fa-bug' },
-        donate: { key: 'donate', label: 'Donate', icon: 'fa-solid fa-heart' }
+        source: { key: 'source', label: '源码', icon: 'fa-brands fa-github' },
+        issues: { key: 'issues', label: '反馈', icon: 'fa-solid fa-bug' },
+        donate: { key: 'donate', label: '捐赠', icon: 'fa-solid fa-heart' }
     },
     parseHangarLinks(detail) {
         const mappedLinks = {};

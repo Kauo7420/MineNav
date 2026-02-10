@@ -235,7 +235,7 @@ async function openModal(item, platform) {
 
     const links = metadata.links || {};
     const normalTagHtml = normalTags.length > 0
-        ? `<div class="detail-section"><h3>Tags</h3><div class="detail-chip-list">${normalTags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div></div>`
+        ? `<div class="detail-section"><h3>标签</h3><div class="detail-chip-list">${normalTags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div></div>`
         : '';
 
     modalContent.innerHTML = `
@@ -244,9 +244,9 @@ async function openModal(item, platform) {
             ${statsHtml}
         </p>
         ${renderVersionMeta(platform, metadata)}
-        ${platform === 'hangar' ? renderSpecialTagSection('Special Tags', hangarSpecialTags) : ''}
-        ${platform === 'modrinth' ? renderSpecialTagSection('Loader Compatibility', loaderCompatibilityTags) : ''}
-        ${platform === 'modrinth' ? renderSpecialTagSection('Datapack Indicator', datapackTags) : ''}
+        ${platform === 'hangar' ? renderSpecialTagSection('特殊标签', hangarSpecialTags) : ''}
+        ${platform === 'modrinth' ? renderSpecialTagSection('加载器兼容性', loaderCompatibilityTags) : ''}
+        ${platform === 'modrinth' ? renderSpecialTagSection('数据包指示器', datapackTags) : ''}
         ${normalTagHtml}
         ${renderExternalLinks(links)}
         <div style="background:var(--bg-input); padding:15px; border-radius:8px; margin-bottom:20px; max-height:300px; overflow-y:auto; line-height:1.6;">

@@ -154,11 +154,10 @@ const LinkService = {
         issues: { key: 'issues', label: '报告问题', icon: 'fa-solid fa-bug' },
         donate: { key: 'donate', label: '赞助', icon: 'fa-solid fa-heart' }
     },
-    // FIX 3: Add new Spigot link mappings
+    // FIXED: Removed supportedLanguages from link mappings (it's plain text, not a URL)
     SPIGOT_LINK_MAPPINGS: {
         sourceCodeLink: { key: 'source', label: '查看源码', icon: 'fa-brands fa-github' },
-        donationLink: { key: 'donate', label: '赞助', icon: 'fa-solid fa-heart' },
-        supportedLanguages: { key: 'languages', label: '语言支持', icon: 'fa-solid fa-language' }
+        donationLink: { key: 'donate', label: '赞助', icon: 'fa-solid fa-heart' }
     },
     parseHangarLinks(detail) {
         const mappedLinks = {};
@@ -188,7 +187,6 @@ const LinkService = {
 
         return mappedLinks;
     },
-    // FIX 3: New method to parse Spigot links
     parseSpigotLinks(detail) {
         const mappedLinks = {};
         
@@ -210,7 +208,7 @@ const LinkService = {
             if (githubUrl && typeof githubUrl === 'string' && githubUrl.trim().length > 0) {
                 mappedLinks.source = {
                     key: 'source',
-                    label: 'View Source Code',
+                    label: '查看源码',
                     icon: 'fa-brands fa-github',
                     url: githubUrl.trim()
                 };
@@ -222,7 +220,7 @@ const LinkService = {
             if (discordUrl && typeof discordUrl === 'string' && discordUrl.trim().length > 0) {
                 mappedLinks.discord = {
                     key: 'discord',
-                    label: 'Join Discord Server',
+                    label: '加入 Discord 服务器',
                     icon: 'fa-brands fa-discord',
                     url: discordUrl.trim()
                 };
@@ -230,6 +228,18 @@ const LinkService = {
         }
 
         return mappedLinks;
+    },
+    // NEW: Extract plain text metadata fields from Spigot (like supportedLanguages)
+    parseSpigotTextMetadata(detail) {
+        const metadata = {};
+        
+        // supportedLanguages is plain text, not a URL
+        const languages = detail?.supportedLanguages;
+        if (languages && typeof languages === 'string' && languages.trim().length > 0) {
+            metadata.supportedLanguages = languages.trim();
+        }
+        
+        return metadata;
     },
     toRenderableLinks(links = {}) {
         return Object.values(links).filter(link => link?.url);
@@ -294,8 +304,8 @@ const MetadataService = {
             links: {},
             hangarPlatformVersions: [],
             loaderCompatibility: [],
-            // FIX 3: Add rating info to fallback
-            rating: null
+            rating: null,
+            textMetadata: {} // NEW: Plain text metadata fields
         };
 
         let metadata = fallback;
@@ -320,7 +330,8 @@ const MetadataService = {
                     },
                     hangarPlatformVersions: [],
                     loaderCompatibility: detail?.loaders || item?.loaders || [],
-                    rating: null
+                    rating: null,
+                    textMetadata: {}
                 };
             } else if (platform === 'hangar') {
                 const slug = getHangarProjectSlug(item);
@@ -343,10 +354,11 @@ const MetadataService = {
                     links: parsedLinks,
                     hangarPlatformVersions: getHangarVersionDisplayEntries(detail),
                     loaderCompatibility: PlatformTagService.getHangarLoaderCompatibility(detail),
-                    rating: null
+                    rating: null,
+                    textMetadata: {}
                 };
             } else {
-                // FIX 2 & FIX 3: Spigot metadata handling
+                // Spigot metadata handling
                 const [detail, versions, minecraftVersions] = await Promise.all([
                     ApiService.getSpigotDetail(id),
                     ApiService.getSpigotVersions(id),
@@ -356,11 +368,9 @@ const MetadataService = {
                 const latestEntry = getLatestByDate(versionItems, 'releaseDate');
                 const testedVersions = resolveSpigotVersions(detail, minecraftVersions);
                 
-                // FIX 2: Removed wiki link mapping - Spigot API doesn't provide it
-                // FIX 3: Use new parseSpigotLinks method
                 const parsedLinks = LinkService.parseSpigotLinks(detail);
+                const textMetadata = LinkService.parseSpigotTextMetadata(detail); // NEW: Extract text metadata
                 
-                // FIX 3: Extract rating information
                 const rating = detail?.rating ? {
                     count: detail.rating.count || 0,
                     average: detail.rating.average || 0
@@ -372,7 +382,8 @@ const MetadataService = {
                     links: parsedLinks,
                     hangarPlatformVersions: [],
                     loaderCompatibility: [],
-                    rating: rating
+                    rating: rating,
+                    textMetadata: textMetadata // NEW: Include text metadata
                 };
             }
         } catch (error) {

@@ -103,6 +103,31 @@ function renderVersionMeta(platform, metadata) {
     `;
 }
 
+// NEW: Render plain text metadata fields (like supportedLanguages)
+function renderTextMetadata(textMetadata = {}) {
+    if (!textMetadata || Object.keys(textMetadata).length === 0) return '';
+    
+    const items = [];
+    
+    // supportedLanguages should be displayed as plain text
+    if (textMetadata.supportedLanguages) {
+        items.push(`
+            <div>
+                <i class="fa-solid fa-language"></i> 
+                语言支持：${escapeHtml(textMetadata.supportedLanguages)}
+            </div>
+        `);
+    }
+    
+    if (items.length === 0) return '';
+    
+    return `
+        <div class="detail-meta" style="margin-top: 12px;">
+            ${items.join('')}
+        </div>
+    `;
+}
+
 function renderExternalLinks(links = {}) {
     const fallbackMappings = [
         { key: 'source', label: '查看源码', icon: 'fa-brands fa-github' },
@@ -110,8 +135,7 @@ function renderExternalLinks(links = {}) {
         { key: 'discord', label: '加入 Discord 服务器', icon: 'fa-brands fa-discord' },
         { key: 'wiki', label: '前往 Wiki', icon: 'fa-solid fa-book' },
         { key: 'issues', label: '报告问题', icon: 'fa-solid fa-bug' },
-        { key: 'donate', label: '赞助', icon: 'fa-solid fa-heart' },
-        { key: 'languages', label: '语言支持', icon: 'fa-solid fa-language' }
+        { key: 'donate', label: '赞助', icon: 'fa-solid fa-heart' }
     ];
 
     let renderableLinks = LinkService.toRenderableLinks(links);
@@ -264,7 +288,7 @@ async function openModal(item, platform) {
 
     metadata = await MetadataService.getMetadata(item, platform);
 
-    // FIX 3: Generate stats HTML with rating for Spigot
+    // Generate stats HTML with rating for Spigot
     let statsHtml = `<i class="fa-solid fa-download"></i> ${formatNumber(details.downloads)} 下载`;
     
     if (platform === 'spigot' && metadata.rating) {
@@ -280,7 +304,7 @@ async function openModal(item, platform) {
         ? PlatformTagService.classifyModrinthTags(details.categories || [], details.loaders || item.loaders || [])
         : { loaderCompatibility: [], datapackIndicator: [], normalTags: details.categories || [] };
     
-    // TASK 5: Add loader compatibility for Hangar
+    // Add loader compatibility for Hangar
     const hangarLoaderCompatibility = platform === 'hangar'
         ? (metadata.loaderCompatibility || []).map(loader => ({
             className: 'special-tag',
@@ -297,7 +321,6 @@ async function openModal(item, platform) {
         ? TagService.translateList(modrinthTagGroups.normalTags)
         : TagService.translateList(details.categories || []);
 
-    // TASK 1: Merge Datapack into loader compatibility tags
     // Build combined loader compatibility array for Modrinth
     const loaderCompatibilityTags = modrinthTagGroups.loaderCompatibility.map(loader => ({
         className: 'special-tag',
@@ -305,14 +328,14 @@ async function openModal(item, platform) {
         label: TagService.translate(loader)
     }));
 
-    // TASK 1 & 3: Add datapack tags to the same array with Chinese label "数据包"
+    // Add datapack tags to the same array with Chinese label "数据包"
     const datapackTags = modrinthTagGroups.datapackIndicator.map(() => ({
         className: 'special-tag special-tag-datapack',
         icon: CONFIG.LOADER_ICONS.datapack || 'fa-database',
         label: '数据包'
     }));
 
-    // TASK 1: Combine loader compatibility and datapack tags into one array
+    // Combine loader compatibility and datapack tags into one array
     const combinedLoaderTags = [...loaderCompatibilityTags, ...datapackTags];
 
     const links = metadata.links || {};
@@ -328,6 +351,7 @@ async function openModal(item, platform) {
             ${statsHtml}
         </p>
         ${renderVersionMeta(platform, metadata)}
+        ${renderTextMetadata(metadata.textMetadata)}
         ${platform === 'hangar' ? renderSpecialTagSection('特殊标签', hangarSpecialTags) : ''}
         ${platform === 'modrinth' ? renderSpecialTagSection('支持的加载器', combinedLoaderTags) : ''}
         ${platform === 'hangar' ? renderSpecialTagSection('支持的加载器', hangarLoaderCompatibility) : ''}

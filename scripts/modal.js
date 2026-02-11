@@ -105,10 +105,13 @@ function renderVersionMeta(platform, metadata) {
 
 function renderExternalLinks(links = {}) {
     const fallbackMappings = [
+        { key: 'source', label: '查看源码', icon: 'fa-brands fa-github' },
         { key: 'github', label: '查看源码', icon: 'fa-brands fa-github' },
         { key: 'discord', label: '加入 Discord 服务器', icon: 'fa-brands fa-discord' },
         { key: 'wiki', label: '前往 Wiki', icon: 'fa-solid fa-book' },
-        { key: 'issues', label: '报告问题', icon: 'fa-solid fa-bug' }
+        { key: 'issues', label: '报告问题', icon: 'fa-solid fa-bug' },
+        { key: 'donate', label: '赞助', icon: 'fa-solid fa-heart' },
+        { key: 'languages', label: '语言支持', icon: 'fa-solid fa-language' }
     ];
 
     let renderableLinks = LinkService.toRenderableLinks(links);
@@ -261,9 +264,15 @@ async function openModal(item, platform) {
 
     metadata = await MetadataService.getMetadata(item, platform);
 
-    // 生成模态框内容
+    // FIX 3: Generate stats HTML with rating for Spigot
     let statsHtml = `<i class="fa-solid fa-download"></i> ${formatNumber(details.downloads)} 下载`;
-    if (details.stars !== undefined) {
+    
+    if (platform === 'spigot' && metadata.rating) {
+        // Add stars (count) and rating (average) for Spigot
+        statsHtml += ` &nbsp;|&nbsp; <i class="fa-solid fa-star"></i> ${formatNumber(metadata.rating.count)} 星标`;
+        statsHtml += ` &nbsp;|&nbsp; <i class="fa-solid fa-star-half-stroke"></i> ${metadata.rating.average.toFixed(1)} 评分`;
+    } else if (details.stars !== undefined) {
+        // For Hangar
         statsHtml += ` &nbsp;|&nbsp; <i class="fa-solid fa-star"></i> ${formatNumber(details.stars)} 星标`;
     }
 

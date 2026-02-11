@@ -39,6 +39,7 @@ const PlatformTagService = {
         'velocity', 'waterfall'
     ]),
     MODRINTH_DATAPACK: 'datapack',
+    // FIX 1: Updated Hangar special tag labels to English
     HANGAR_SPECIAL_TAGS: {
         SUPPORTS_FOLIA: {
             key: 'folia',
@@ -153,6 +154,12 @@ const LinkService = {
         issues: { key: 'issues', label: '报告问题', icon: 'fa-solid fa-bug' },
         donate: { key: 'donate', label: '赞助', icon: 'fa-solid fa-heart' }
     },
+    // FIX 3: Add new Spigot link mappings
+    SPIGOT_LINK_MAPPINGS: {
+        sourceCodeLink: { key: 'source', label: '查看源码', icon: 'fa-brands fa-github' },
+        donationLink: { key: 'donate', label: '赞助', icon: 'fa-solid fa-heart' },
+        supportedLanguages: { key: 'languages', label: '语言支持', icon: 'fa-solid fa-language' }
+    },
     parseHangarLinks(detail) {
         const mappedLinks = {};
         const linkGroups = detail?.settings?.links;
@@ -178,6 +185,49 @@ const LinkService = {
                 };
             });
         });
+
+        return mappedLinks;
+    },
+    // FIX 3: New method to parse Spigot links
+    parseSpigotLinks(detail) {
+        const mappedLinks = {};
+        
+        Object.entries(this.SPIGOT_LINK_MAPPINGS).forEach(([apiField, mapping]) => {
+            const url = detail?.[apiField];
+            if (url && typeof url === 'string' && url.trim().length > 0) {
+                mappedLinks[mapping.key] = {
+                    key: mapping.key,
+                    label: mapping.label,
+                    icon: mapping.icon,
+                    url: url.trim()
+                };
+            }
+        });
+
+        // Also check for legacy field names
+        if (!mappedLinks.source) {
+            const githubUrl = detail?.links?.github || detail?.githubUrl;
+            if (githubUrl && typeof githubUrl === 'string' && githubUrl.trim().length > 0) {
+                mappedLinks.source = {
+                    key: 'source',
+                    label: 'View Source Code',
+                    icon: 'fa-brands fa-github',
+                    url: githubUrl.trim()
+                };
+            }
+        }
+
+        if (!mappedLinks.discord) {
+            const discordUrl = detail?.links?.discord || detail?.discordUrl;
+            if (discordUrl && typeof discordUrl === 'string' && discordUrl.trim().length > 0) {
+                mappedLinks.discord = {
+                    key: 'discord',
+                    label: 'Join Discord Server',
+                    icon: 'fa-brands fa-discord',
+                    url: discordUrl.trim()
+                };
+            }
+        }
 
         return mappedLinks;
     },
@@ -243,7 +293,9 @@ const MetadataService = {
             latestVersion: '未知',
             links: {},
             hangarPlatformVersions: [],
-            loaderCompatibility: []
+            loaderCompatibility: [],
+            // FIX 3: Add rating info to fallback
+            rating: null
         };
 
         let metadata = fallback;
@@ -267,7 +319,8 @@ const MetadataService = {
                         issues: detail?.issues_url
                     },
                     hangarPlatformVersions: [],
-                    loaderCompatibility: detail?.loaders || item?.loaders || []
+                    loaderCompatibility: detail?.loaders || item?.loaders || [],
+                    rating: null
                 };
             } else if (platform === 'hangar') {
                 const slug = getHangarProjectSlug(item);
@@ -289,9 +342,11 @@ const MetadataService = {
                     latestVersion: latestEntry.version || latestEntry.name || latestEntry.versionString || '未知',
                     links: parsedLinks,
                     hangarPlatformVersions: getHangarVersionDisplayEntries(detail),
-                    loaderCompatibility: PlatformTagService.getHangarLoaderCompatibility(detail)
+                    loaderCompatibility: PlatformTagService.getHangarLoaderCompatibility(detail),
+                    rating: null
                 };
             } else {
+                // FIX 2 & FIX 3: Spigot metadata handling
                 const [detail, versions, minecraftVersions] = await Promise.all([
                     ApiService.getSpigotDetail(id),
                     ApiService.getSpigotVersions(id),
@@ -300,16 +355,24 @@ const MetadataService = {
                 const versionItems = Array.isArray(versions) ? versions : [];
                 const latestEntry = getLatestByDate(versionItems, 'releaseDate');
                 const testedVersions = resolveSpigotVersions(detail, minecraftVersions);
+                
+                // FIX 2: Removed wiki link mapping - Spigot API doesn't provide it
+                // FIX 3: Use new parseSpigotLinks method
+                const parsedLinks = LinkService.parseSpigotLinks(detail);
+                
+                // FIX 3: Extract rating information
+                const rating = detail?.rating ? {
+                    count: detail.rating.count || 0,
+                    average: detail.rating.average || 0
+                } : null;
+                
                 metadata = {
                     supportedVersions: testedVersions,
                     latestVersion: latestEntry?.name || latestEntry?.version || detail?.version?.name || detail?.version || '未知',
-                    links: {
-                        github: detail?.links?.github || detail?.sourceCodeLink || detail?.githubUrl,
-                        discord: detail?.links?.discord || detail?.discordUrl,
-                        wiki: detail?.documentation || detail?.wikiUrl
-                    },
+                    links: parsedLinks,
                     hangarPlatformVersions: [],
-                    loaderCompatibility: []
+                    loaderCompatibility: [],
+                    rating: rating
                 };
             }
         } catch (error) {

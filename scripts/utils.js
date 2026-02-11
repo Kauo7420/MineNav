@@ -42,19 +42,19 @@ const PlatformTagService = {
     HANGAR_SPECIAL_TAGS: {
         SUPPORTS_FOLIA: {
             key: 'folia',
-            label: 'Supports Folia',
+            label: '支持 Folia',
             icon: 'fa-leaf',
             className: 'special-tag special-tag-folia'
         },
         ADDON: {
             key: 'addon',
-            label: 'Addon',
+            label: '插件',
             icon: 'fa-puzzle-piece',
             className: 'special-tag special-tag-addon'
         },
         LIBRARY: {
             key: 'library',
-            label: 'Library',
+            label: '库',
             icon: 'fa-book-open',
             className: 'special-tag special-tag-library'
         }

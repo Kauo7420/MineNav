@@ -1,7 +1,4 @@
-// ============================================
 // 打字机动画模块
-// ============================================
-
 class TypingAnimation {
     constructor(elementId, options = {}) {
         this.element = document.getElementById(elementId);

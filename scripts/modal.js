@@ -288,17 +288,23 @@ async function openModal(item, platform) {
         ? TagService.translateList(modrinthTagGroups.normalTags)
         : TagService.translateList(details.categories || []);
 
+    // TASK 1: Merge Datapack into loader compatibility tags
+    // Build combined loader compatibility array for Modrinth
     const loaderCompatibilityTags = modrinthTagGroups.loaderCompatibility.map(loader => ({
         className: 'special-tag',
         icon: CONFIG.LOADER_ICONS[loader] || 'fa-puzzle-piece',
         label: TagService.translate(loader)
     }));
 
+    // TASK 1 & 3: Add datapack tags to the same array with Chinese label "数据包"
     const datapackTags = modrinthTagGroups.datapackIndicator.map(() => ({
         className: 'special-tag special-tag-datapack',
         icon: CONFIG.LOADER_ICONS.datapack || 'fa-database',
-        label: 'Datapack'
+        label: '数据包'
     }));
+
+    // TASK 1: Combine loader compatibility and datapack tags into one array
+    const combinedLoaderTags = [...loaderCompatibilityTags, ...datapackTags];
 
     const links = metadata.links || {};
     const normalTagHtml = normalTags.length > 0
@@ -314,9 +320,8 @@ async function openModal(item, platform) {
         </p>
         ${renderVersionMeta(platform, metadata)}
         ${platform === 'hangar' ? renderSpecialTagSection('特殊标签', hangarSpecialTags) : ''}
-        ${platform === 'modrinth' ? renderSpecialTagSection('支持的加载器', loaderCompatibilityTags) : ''}
+        ${platform === 'modrinth' ? renderSpecialTagSection('支持的加载器', combinedLoaderTags) : ''}
         ${platform === 'hangar' ? renderSpecialTagSection('支持的加载器', hangarLoaderCompatibility) : ''}
-        ${platform === 'modrinth' ? renderSpecialTagSection('数据包指示器', datapackTags) : ''}
         ${platform === 'modrinth' ? renderSpecialTagSection('运行环境', runtimeTags) : ''}
         ${normalTagHtml}
         ${renderExternalLinks(links)}

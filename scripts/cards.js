@@ -67,10 +67,9 @@ function renderCard(item, platform) {
         : [];
 
     // 渲染特殊标签（Loaders + Datapack + Hangar Special Tags）
-    // TASK 2: Initial placeholder for Hangar loaders (will be populated async)
     let specialTagsHtml = '';
     
-    // Modrinth: 加载器标签 - TASK 1: Add text labels in grid view
+    // Modrinth: 加载器标签
     if (platform === 'modrinth' && modrinthTagGroups.loaderCompatibility.length > 0) {
         modrinthTagGroups.loaderCompatibility.forEach(loader => {
             const icon = CONFIG.LOADER_ICONS[loader] || 'fa-puzzle-piece';
@@ -82,7 +81,7 @@ function renderCard(item, platform) {
     // Modrinth: Datapack 标签（单独显示）
     if (platform === 'modrinth' && modrinthTagGroups.datapackIndicator.length > 0) {
         const icon = CONFIG.LOADER_ICONS['datapack'] || 'fa-database';
-        specialTagsHtml += `<span class="loader-tag loader-tag-datapack" title="Datapack"><i class="fa-solid ${icon}"></i> Datapack</span>`;
+        specialTagsHtml += `<span class="loader-tag loader-tag-datapack" title="数据包"><i class="fa-solid ${icon}"></i> 数据包</span>`;
     }
 
     // Hangar: Special Tags

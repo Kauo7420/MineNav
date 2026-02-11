@@ -61,7 +61,7 @@ function renderExternalLinks(links = {}) {
         { key: 'github', label: '查看源码', icon: 'fa-brands fa-github' },
         { key: 'discord', label: '加入 Discord 服务器', icon: 'fa-brands fa-discord' },
         { key: 'wiki', label: '前往 Wiki', icon: 'fa-solid fa-book' },
-        { key: 'issues', label: '报告问题', icon: 'fa-solid fa-bug' }  // NEW: 添加issues链接
+        { key: 'issues', label: '报告问题', icon: 'fa-solid fa-bug' }
     ];
 
     let renderableLinks = LinkService.toRenderableLinks(links);
@@ -100,10 +100,9 @@ async function openModal(item, platform) {
     if (platform === 'modrinth') {
         try {
             const fullData = await ApiService.getModrinthDetail(item.project_id || item.id || item.slug);
-            // FIXED: 使用'description'字段代替'body'字段，并以纯文本形式呈现。
             details = {
                 title: fullData.title,
-                desc: fullData.description || '暂无详细描述',  // FIXED: 使用描述字段，纯文本
+                desc: fullData.description || '暂无详细描述',
                 downloads: fullData.downloads,
                 link: `https://modrinth.com/plugin/${fullData.slug}`,
                 categories: fullData.categories,
@@ -113,7 +112,7 @@ async function openModal(item, platform) {
         } catch (error) {
             details = {
                 title: item.title,
-                desc: item.description || '暂无详细描述',  // FIXED: 使用描述字段，纯文本
+                desc: item.description || '暂无详细描述',
                 downloads: item.downloads || 0,
                 link: `https://modrinth.com/plugin/${item.slug}`,
                 categories: item.categories || [],
@@ -123,14 +122,12 @@ async function openModal(item, platform) {
         }
     } 
     else if (platform === 'hangar') {
-        // Hangar 详情
         const slug = getHangarProjectSlug(item);
         if (slug) {
             try {
                 const fullData = await ApiService.getHangarDetail(slug);
                 
                 if (fullData) {
-                    // SAFE: Handle category mapping with fallback
                     const categoryKey = fullData.category || 'UNDEFINED';
                     const translatedCategory = CONFIG.HANGAR_CATEGORIES?.[categoryKey] || categoryKey;
                     
@@ -145,7 +142,6 @@ async function openModal(item, platform) {
                         tags: Array.isArray(fullData.tags) ? fullData.tags : (Array.isArray(item.tags) ? item.tags : [])
                     };
                 } else {
-                    // 降级使用列表数据
                     const categoryKey = item.category || 'UNDEFINED';
                     const translatedCategory = CONFIG.HANGAR_CATEGORIES?.[categoryKey] || categoryKey;
                     
@@ -162,7 +158,6 @@ async function openModal(item, platform) {
                 }
             } catch (error) {
                 console.warn('Hangar detail fetch failed:', error);
-                // Fallback with list data
                 const categoryKey = item.category || 'UNDEFINED';
                 const translatedCategory = CONFIG.HANGAR_CATEGORIES?.[categoryKey] || categoryKey;
                 
@@ -215,6 +210,16 @@ async function openModal(item, platform) {
     const modrinthTagGroups = platform === 'modrinth'
         ? PlatformTagService.classifyModrinthTags(details.categories || [], details.loaders || item.loaders || [])
         : { loaderCompatibility: [], datapackIndicator: [], normalTags: details.categories || [] };
+    
+    // TASK 5: Add loader compatibility for Hangar
+    const hangarLoaderCompatibility = platform === 'hangar'
+        ? (metadata.loaderCompatibility || []).map(loader => ({
+            className: 'special-tag',
+            icon: CONFIG.LOADER_ICONS[loader] || 'fa-puzzle-piece',
+            label: TagService.translate(loader)
+        }))
+        : [];
+    
     const hangarSpecialTags = platform === 'hangar'
         ? PlatformTagService.getHangarSpecialTags(details.tags || item.tags || [])
         : [];
@@ -240,7 +245,6 @@ async function openModal(item, platform) {
         ? `<div class="detail-section"><h3>标签</h3><div class="detail-chip-list">${normalTags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div></div>`
         : '';
 
-    // FIXED: Description is now plain text (renderMarkdownContent now just escapes HTML)
     const descriptionHtml = escapeHtml(details.desc).replace(/\n/g, '<br>');
 
     modalContent.innerHTML = `
@@ -251,6 +255,7 @@ async function openModal(item, platform) {
         ${renderVersionMeta(platform, metadata)}
         ${platform === 'hangar' ? renderSpecialTagSection('特殊标签', hangarSpecialTags) : ''}
         ${platform === 'modrinth' ? renderSpecialTagSection('支持的加载器', loaderCompatibilityTags) : ''}
+        ${platform === 'hangar' ? renderSpecialTagSection('支持的加载器', hangarLoaderCompatibility) : ''}
         ${platform === 'modrinth' ? renderSpecialTagSection('数据包指示器', datapackTags) : ''}
         ${normalTagHtml}
         ${renderExternalLinks(links)}

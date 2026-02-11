@@ -59,6 +59,7 @@ const PlatformTagService = {
             className: 'special-tag special-tag-library'
         }
     },
+    // TASK 3: Fixed to properly filter loaders from categories array
     classifyModrinthTags(categories = [], loaders = []) {
         const normalizedLoaders = Array.isArray(loaders)
             ? loaders.map(loader => `${loader}`.toLowerCase().trim()).filter(Boolean)
@@ -71,6 +72,7 @@ const PlatformTagService = {
         const datapackIndicator = [];
         const consumed = new Set();
 
+        // Process explicit loaders array
         normalizedLoaders.forEach(loader => {
             if (loader === this.MODRINTH_DATAPACK) {
                 datapackIndicator.push(loader);
@@ -84,6 +86,25 @@ const PlatformTagService = {
             }
         });
 
+        // FIXED: Also filter out loaders that appear in categories array
+        normalizedCategories.forEach(category => {
+            if (category === this.MODRINTH_DATAPACK) {
+                if (!datapackIndicator.includes(category)) {
+                    datapackIndicator.push(category);
+                }
+                consumed.add(category);
+                return;
+            }
+
+            if (this.MODRINTH_SPECIAL_LOADERS.has(category)) {
+                if (!loaderCompatibility.includes(category)) {
+                    loaderCompatibility.push(category);
+                }
+                consumed.add(category);
+            }
+        });
+
+        // Only keep categories that are not loaders
         const normalTags = normalizedCategories.filter(tag => !consumed.has(tag));
 
         return {
@@ -243,7 +264,7 @@ const MetadataService = {
                         github: detail?.source_url,
                         discord: detail?.discord_url,
                         wiki: detail?.wiki_url,
-                        issues: detail?.issues_url  // NEW: Add issues link
+                        issues: detail?.issues_url
                     },
                     hangarPlatformVersions: [],
                     loaderCompatibility: detail?.loaders || item?.loaders || []
@@ -260,7 +281,6 @@ const MetadataService = {
 
                 const versionItems = versions?.result || [];
                 const latestEntry = getLatestByDate(versionItems, 'createdAt') || {};
-                // FIXED: Only use PAPER platform for card version display
                 const supportedVersions = extractHangarMinecraftVersionsFromDetail(detail, 'PAPER');
                 const parsedLinks = LinkService.parseHangarLinks(detail);
 
@@ -269,7 +289,7 @@ const MetadataService = {
                     latestVersion: latestEntry.version || latestEntry.name || latestEntry.versionString || '未知',
                     links: parsedLinks,
                     hangarPlatformVersions: getHangarVersionDisplayEntries(detail),
-                    loaderCompatibility: PlatformTagService.getHangarLoaderCompatibility(detail)  // NEW: Add loader compatibility
+                    loaderCompatibility: PlatformTagService.getHangarLoaderCompatibility(detail)
                 };
             } else {
                 const [detail, versions, minecraftVersions] = await Promise.all([
@@ -352,17 +372,14 @@ function getHangarVersionDisplayEntries(detail) {
     }));
 }
 
-// FIXED: Add platformFilter parameter to support PAPER-only filtering for cards
 function extractHangarMinecraftVersionsFromDetail(detail, platformFilter = null) {
     try {
         const versionMap = extractHangarPlatformVersionMap(detail);
         
-        // If platformFilter is specified (e.g., 'PAPER'), return only that platform's versions
         if (platformFilter && versionMap[platformFilter]) {
             return versionMap[platformFilter];
         }
         
-        // For detail view, return all platforms
         return Object.values(versionMap).flat();
     } catch (e) {
         console.warn('Invalid Hangar supportedPlatforms structure:', e);
@@ -436,11 +453,7 @@ function escapeHtml(text) {
     return `${text}`.replace(/[&<>"']/g, match => map[match]);
 }
 
-// FIXED: Remove markdown rendering, display as plain text
 function renderMarkdownContent(markdown) {
     if (!markdown) return '';
-    // Simply escape HTML and preserve line breaks
     return escapeHtml(markdown).replace(/\n/g, '<br>');
 }
-
-// Backend favorites storage can be wired here later if needed.

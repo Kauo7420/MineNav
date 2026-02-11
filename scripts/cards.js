@@ -58,6 +58,7 @@ function renderCard(item, platform) {
         platformBadge = `<span class="badge badge-spigot"><i class="fa-solid fa-faucet"></i> Spigot</span>`;
     }
 
+    // TASK 3: Fix Modrinth tag classification to remove loaders from categories
     const modrinthTagGroups = platform === 'modrinth'
         ? PlatformTagService.classifyModrinthTags(categories, loaders)
         : { loaderCompatibility: [], datapackIndicator: [], normalTags: categories };
@@ -68,7 +69,7 @@ function renderCard(item, platform) {
     // 渲染特殊标签（Loaders + Datapack + Hangar Special Tags）
     let specialTagsHtml = '';
     
-    // Modrinth: 加载器标签
+    // Modrinth: 加载器标签 - TASK 1: Add text labels in grid view
     if (platform === 'modrinth' && modrinthTagGroups.loaderCompatibility.length > 0) {
         modrinthTagGroups.loaderCompatibility.forEach(loader => {
             const icon = CONFIG.LOADER_ICONS[loader] || 'fa-puzzle-piece';
@@ -117,7 +118,6 @@ function renderCard(item, platform) {
         ${categoryTagsHtml}
         <div class="card-extra">
             <span title="支持版本"><i class="fa-solid fa-gamepad"></i> <span class="metadata-versions">加载中...</span></span>
-            <span class="metadata-loaders" title="支持的加载器"></span>
             <span title="最新版本"><i class="fa-solid fa-code-branch"></i> <span class="metadata-latest">加载中...</span></span>
         </div>
         <div class="card-meta">
@@ -169,32 +169,18 @@ async function updateSpigotAuthor(card, authorId) {
     }
 }
 
-// FIXED: Add loader compatibility badge display after version info
+// IMPROVED: Simplified metadata display - removed duplicate loader badges
 async function updateCardMetadata(card, item, platform) {
     const versionsEl = card.querySelector('.metadata-versions');
     const latestEl = card.querySelector('.metadata-latest');
-    const loadersEl = card.querySelector('.metadata-loaders');
 
     try {
         const metadata = await MetadataService.getMetadata(item, platform);
         versionsEl.textContent = formatVersionList(metadata.supportedVersions, '未知');
         latestEl.textContent = metadata.latestVersion || '未知';
-        
-        // NEW: Display loader compatibility badges after version info
-        if (loadersEl && Array.isArray(metadata.loaderCompatibility) && metadata.loaderCompatibility.length > 0) {
-            const loaderBadges = metadata.loaderCompatibility.map(loader => {
-                const icon = CONFIG.LOADER_ICONS[loader] || 'fa-puzzle-piece';
-                const name = TagService.translate(loader);
-                return `<span class="loader-badge" title="${name}"><i class="fa-solid ${icon}"></i></span>`;
-            }).join(' ');
-            loadersEl.innerHTML = `<i class="fa-solid fa-puzzle-piece"></i> ${loaderBadges}`;
-        } else {
-            loadersEl.style.display = 'none';
-        }
     } catch (error) {
         console.warn('Card metadata update failed:', error);
         versionsEl.textContent = '未知';
         latestEl.textContent = '未知';
-        if (loadersEl) loadersEl.style.display = 'none';
     }
 }

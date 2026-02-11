@@ -138,7 +138,7 @@
     background: rgba(0, 0, 0, 0.45);
 }
 
-/* NEW: Special Loader Tags Container */
+/* TASK 1: Loader Tags Container - Special section for loader compatibility */
 .card-loaders {
     display: flex;
     flex-wrap: wrap;
@@ -149,20 +149,21 @@
     border-bottom: 1px dashed var(--border-color);
 }
 
-/* NEW: Loader Tags Styling */
+/* TASK 1: Loader Tags Styling - Icon + Text Label pairs */
 .loader-tag,
 .special-tag {
     display: inline-flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
+    gap: 5px;
+    padding: 5px 12px;
     border-radius: 6px;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-weight: 600;
     background: linear-gradient(135deg, rgba(27, 217, 106, 0.15), rgba(27, 217, 106, 0.05));
     color: var(--modrinth-green);
     border: 1px solid rgba(27, 217, 106, 0.3);
     transition: all 0.2s;
+    white-space: nowrap;
 }
 
 .loader-tag:hover,
@@ -173,30 +174,10 @@
 
 .loader-tag i,
 .special-tag i {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
 }
 
-/* NEW: Loader Badge (smaller, icon-only style for metadata section) */
-.loader-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 20px;
-    height: 20px;
-    border-radius: 4px;
-    background: linear-gradient(135deg, rgba(27, 217, 106, 0.15), rgba(27, 217, 106, 0.05));
-    color: var(--modrinth-green);
-    border: 1px solid rgba(27, 217, 106, 0.3);
-    font-size: 0.7rem;
-    transition: all 0.2s;
-}
-
-.loader-badge:hover {
-    transform: scale(1.1);
-    box-shadow: 0 2px 6px rgba(27, 217, 106, 0.25);
-}
-
-/* NEW: Special Datapack Tag */
+/* Special Datapack Tag */
 .loader-tag-datapack,
 .special-tag-datapack {
     background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
@@ -209,7 +190,7 @@
     box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
 }
 
-/* NEW: Special Folia Support Tag */
+/* Special Folia Support Tag */
 .loader-tag-folia,
 .special-tag-folia {
     background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
@@ -221,7 +202,6 @@
 .special-tag-folia:hover {
     box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
 }
-
 
 .special-tag-addon {
     background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(245, 158, 11, 0.05));

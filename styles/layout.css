@@ -11,14 +11,14 @@
     margin-bottom: 40px;
 }
 
-/* FIXED: Compact Mode - Improved Spacing & Readability */
+/* TASK 2: Compact Mode - 4 cards per row with optimized spacing */
 .plugin-grid[data-layout="compact"] {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
 }
 
 .plugin-grid[data-layout="compact"] .card {
-    padding: 18px;
+    padding: 16px;
 }
 
 /* Hide description in compact mode */
@@ -43,13 +43,13 @@
 
 /* Increase spacing for card-extra in compact mode */
 .plugin-grid[data-layout="compact"] .card-extra {
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 6px;
+    margin-bottom: 12px;
 }
 
 /* Ensure card header has good spacing in compact mode */
 .plugin-grid[data-layout="compact"] .card-header {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 /* Keep loader badges visible in compact mode */
@@ -57,47 +57,52 @@
     display: flex;
 }
 
-/* FIXED: List Mode - Clean Single Column Layout */
+/* TASK 4: List Mode - Optimized for high information density */
 .plugin-grid[data-layout="list"] {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 12px;
 }
 
 .plugin-grid[data-layout="list"] .card {
     display: grid;
     grid-template-columns: auto 1fr auto;
     grid-template-areas:
-        "icon title favorite"
+        "icon header favorite"
         "icon desc favorite";
-    gap: 12px 16px;
-    padding: 16px;
-    align-items: center;
+    gap: 8px 16px;
+    padding: 12px 16px;
+    align-items: start;
 }
 
 .plugin-grid[data-layout="list"] .card-header {
-    grid-area: icon;
+    grid-area: header;
     margin-bottom: 0;
-    flex-direction: column;
-    gap: 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
 }
 
 .plugin-grid[data-layout="list"] .card-icon {
-    width: 56px;
-    height: 56px;
+    width: 48px;
+    height: 48px;
+    grid-area: icon;
+    align-self: start;
 }
 
 .plugin-grid[data-layout="list"] .card-title {
-    grid-area: title;
-    align-self: start;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .plugin-grid[data-layout="list"] .card-title h3 {
     max-width: none;
-    font-size: 1.15rem;
+    font-size: 1.05rem;
+    margin-bottom: 0;
 }
 
 .plugin-grid[data-layout="list"] .card-author {
-    display: none;
+    font-size: 0.8rem;
 }
 
 .plugin-grid[data-layout="list"] .card-desc {
@@ -105,17 +110,17 @@
     margin-bottom: 0;
     -webkit-line-clamp: 1;
     height: auto;
-    align-self: start;
+    font-size: 0.85rem;
+    line-height: 1.4;
 }
 
 .plugin-grid[data-layout="list"] .favorite-btn {
     grid-area: favorite;
     position: static;
     align-self: start;
-    margin-top: 4px;
 }
 
-/* Hide all extra elements in list mode */
+/* Hide all extra elements in list mode to maximize density */
 .plugin-grid[data-layout="list"] .card-loaders,
 .plugin-grid[data-layout="list"] .card-tags,
 .plugin-grid[data-layout="list"] .card-extra,
@@ -135,10 +140,10 @@
     .plugin-grid[data-layout="list"] .card {
         grid-template-columns: auto 1fr;
         grid-template-areas:
-            "icon title"
+            "icon header"
             "icon desc"
             "favorite favorite";
-        gap: 10px;
+        gap: 8px;
     }
 
     .plugin-grid[data-layout="list"] .favorite-btn {

@@ -149,15 +149,15 @@
     border-bottom: 1px dashed var(--border-color);
 }
 
-/* TASK 1: Loader Tags Styling - Icon + Text Label pairs */
+/* TASK 1: Loader Tags Styling - Reduced size by ~15% for better visual balance */
 .loader-tag,
 .special-tag {
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-    padding: 5px 12px;
-    border-radius: 6px;
-    font-size: 0.75rem;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 0.7rem;
     font-weight: 600;
     background: linear-gradient(135deg, rgba(27, 217, 106, 0.15), rgba(27, 217, 106, 0.05));
     color: var(--modrinth-green);
@@ -174,7 +174,7 @@
 
 .loader-tag i,
 .special-tag i {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
 }
 
 /* Special Datapack Tag */
@@ -213,6 +213,45 @@
     background: linear-gradient(135deg, rgba(139, 92, 246, 0.16), rgba(139, 92, 246, 0.05));
     color: #8b5cf6;
     border-color: rgba(139, 92, 246, 0.35);
+}
+
+/* TASK 4: Runtime Environment Tags */
+.runtime-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+
+.runtime-tag-required {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.runtime-tag-optional {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.05));
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.runtime-tag-unsupported {
+    background: linear-gradient(135deg, rgba(148, 163, 184, 0.15), rgba(148, 163, 184, 0.05));
+    color: #94a3b8;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.runtime-tag:hover {
+    transform: translateY(-1px);
+}
+
+.runtime-tag i {
+    font-size: 0.75rem;
 }
 
 .detail-section {

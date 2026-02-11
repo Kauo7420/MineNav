@@ -12,6 +12,53 @@ function closeModal() {
     document.body.style.overflow = '';
 }
 
+// TASK 4: Runtime Environment Mapping Utility
+const RuntimeEnvironmentService = {
+    SIDE_LABELS: {
+        client: '客户端',
+        server: '服务端'
+    },
+    SUPPORT_LABELS: {
+        required: '需装',
+        optional: '可选',
+        unsupported: '无效'
+    },
+    SUPPORT_CLASSES: {
+        required: 'runtime-tag-required',
+        optional: 'runtime-tag-optional',
+        unsupported: 'runtime-tag-unsupported'
+    },
+    SUPPORT_ICONS: {
+        required: 'fa-check-circle',
+        optional: 'fa-circle-dot',
+        unsupported: 'fa-circle-xmark'
+    },
+    parseRuntimeEnvironment(clientSide, serverSide) {
+        const tags = [];
+        
+        if (clientSide && this.SUPPORT_LABELS[clientSide]) {
+            tags.push({
+                side: 'client',
+                support: clientSide,
+                label: `${this.SIDE_LABELS.client}: ${this.SUPPORT_LABELS[clientSide]}`,
+                className: `runtime-tag ${this.SUPPORT_CLASSES[clientSide]}`,
+                icon: this.SUPPORT_ICONS[clientSide]
+            });
+        }
+        
+        if (serverSide && this.SUPPORT_LABELS[serverSide]) {
+            tags.push({
+                side: 'server',
+                support: serverSide,
+                label: `${this.SIDE_LABELS.server}: ${this.SUPPORT_LABELS[serverSide]}`,
+                className: `runtime-tag ${this.SUPPORT_CLASSES[serverSide]}`,
+                icon: this.SUPPORT_ICONS[serverSide]
+            });
+        }
+        
+        return tags;
+    }
+};
 
 function renderSpecialTagSection(title, tags = []) {
     if (!Array.isArray(tags) || tags.length === 0) return '';
@@ -96,6 +143,7 @@ async function openModal(item, platform) {
 
     let details = {};
     let metadata = {};
+    let runtimeTags = []; // TASK 4: Runtime environment tags
     
     if (platform === 'modrinth') {
         try {
@@ -109,6 +157,12 @@ async function openModal(item, platform) {
                 versions: fullData.game_versions,
                 loaders: fullData.loaders || item.loaders || []
             };
+            
+            // TASK 4: Extract runtime environment data
+            runtimeTags = RuntimeEnvironmentService.parseRuntimeEnvironment(
+                fullData.client_side,
+                fullData.server_side
+            );
         } catch (error) {
             details = {
                 title: item.title,
@@ -119,6 +173,12 @@ async function openModal(item, platform) {
                 versions: item.versions || [],
                 loaders: item.loaders || []
             };
+            
+            // TASK 4: Try to extract runtime from item fallback
+            runtimeTags = RuntimeEnvironmentService.parseRuntimeEnvironment(
+                item.client_side,
+                item.server_side
+            );
         }
     } 
     else if (platform === 'hangar') {
@@ -257,6 +317,7 @@ async function openModal(item, platform) {
         ${platform === 'modrinth' ? renderSpecialTagSection('支持的加载器', loaderCompatibilityTags) : ''}
         ${platform === 'hangar' ? renderSpecialTagSection('支持的加载器', hangarLoaderCompatibility) : ''}
         ${platform === 'modrinth' ? renderSpecialTagSection('数据包指示器', datapackTags) : ''}
+        ${platform === 'modrinth' ? renderSpecialTagSection('运行环境', runtimeTags) : ''}
         ${normalTagHtml}
         ${renderExternalLinks(links)}
         <div style="background:var(--bg-input); padding:15px; border-radius:8px; margin-bottom:20px; max-height:300px; overflow-y:auto; line-height:1.6;">

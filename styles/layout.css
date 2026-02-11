@@ -11,7 +11,7 @@
     margin-bottom: 40px;
 }
 
-/* TASK 2: Compact Mode - 4 cards per row with optimized spacing */
+/* TASK 2 & 3: Compact Mode - 4 cards per row with optimized spacing */
 .plugin-grid[data-layout="compact"] {
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 16px;
@@ -28,6 +28,11 @@
 
 /* Hide generic tags in compact mode */
 .plugin-grid[data-layout="compact"] .card-tags {
+    display: none;
+}
+
+/* TASK 3: Hide loader compatibility tags in compact mode for maximum density */
+.plugin-grid[data-layout="compact"] .card-loaders {
     display: none;
 }
 
@@ -50,11 +55,6 @@
 /* Ensure card header has good spacing in compact mode */
 .plugin-grid[data-layout="compact"] .card-header {
     margin-bottom: 12px;
-}
-
-/* Keep loader badges visible in compact mode */
-.plugin-grid[data-layout="compact"] .card-loaders {
-    display: flex;
 }
 
 /* TASK 4: List Mode - Optimized for high information density */

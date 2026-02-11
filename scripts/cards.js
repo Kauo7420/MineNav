@@ -67,6 +67,7 @@ function renderCard(item, platform) {
         : [];
 
     // 渲染特殊标签（Loaders + Datapack + Hangar Special Tags）
+    // TASK 2: Initial placeholder for Hangar loaders (will be populated async)
     let specialTagsHtml = '';
     
     // Modrinth: 加载器标签 - TASK 1: Add text labels in grid view
@@ -114,7 +115,7 @@ function renderCard(item, platform) {
             </div>
         </div>
         <div class="card-desc">${desc || '暂无描述'}</div>
-        ${specialTagsHtml ? `<div class="card-loaders">${specialTagsHtml}</div>` : ''}
+        ${specialTagsHtml || platform === 'hangar' ? `<div class="card-loaders" data-loader-container>${specialTagsHtml}</div>` : ''}
         ${categoryTagsHtml}
         <div class="card-extra">
             <span title="支持版本"><i class="fa-solid fa-gamepad"></i> <span class="metadata-versions">加载中...</span></span>
@@ -169,15 +170,29 @@ async function updateSpigotAuthor(card, authorId) {
     }
 }
 
-// IMPROVED: Simplified metadata display - removed duplicate loader badges
+// TASK 2: Enhanced to also update Hangar loader compatibility tags
 async function updateCardMetadata(card, item, platform) {
     const versionsEl = card.querySelector('.metadata-versions');
     const latestEl = card.querySelector('.metadata-latest');
+    const loaderContainer = card.querySelector('[data-loader-container]');
 
     try {
         const metadata = await MetadataService.getMetadata(item, platform);
         versionsEl.textContent = formatVersionList(metadata.supportedVersions, '未知');
         latestEl.textContent = metadata.latestVersion || '未知';
+
+        // TASK 2: Update Hangar loader compatibility tags after metadata loads
+        if (platform === 'hangar' && loaderContainer && metadata.loaderCompatibility && metadata.loaderCompatibility.length > 0) {
+            const loaderTagsHtml = metadata.loaderCompatibility.map(loader => {
+                const icon = CONFIG.LOADER_ICONS[loader] || 'fa-puzzle-piece';
+                const name = TagService.translate(loader);
+                return `<span class="loader-tag" title="${name}"><i class="fa-solid ${icon}"></i> ${name}</span>`;
+            }).join('');
+            
+            // Prepend loader tags before any existing special tags
+            const existingContent = loaderContainer.innerHTML;
+            loaderContainer.innerHTML = loaderTagsHtml + existingContent;
+        }
     } catch (error) {
         console.warn('Card metadata update failed:', error);
         versionsEl.textContent = '未知';
